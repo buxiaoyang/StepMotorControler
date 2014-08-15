@@ -264,7 +264,7 @@ void main()
 	//timer_init();
 	while(1)
 	{
-		delay_us(3600);
+		delay_us(cylinderAlarm1);
 		if(saveSetting)
 		{
 			ChangeScreenPage(0x0A);
