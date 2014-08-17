@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/17/2014 20:32:46 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/17/2014 20:59:32 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -41,50 +41,80 @@ line level    source
   31   1              SendDataToScreen(0x0012, isStartPosition);
   32   1      }
   33          
-  34          
-  35          /***************************************************************************/
-  36          // 主函数
-  37          // 参数：无
-  38          // 返回值：无   
-  39          /***************************************************************************/
-  40          void main()
-  41          {
-  42   1              delay_ms(500);
-  43   1              parameter_init();
-  44   1              uart_init();
-  45   1              //timer_init();
-  46   1              while(1)
-  47   1              {
-  48   2                      delay_us(100);
-  49   2                      if(saveSetting)
-  50   2                      {
-  51   3                              ChangeScreenPage(0x04);
-  52   3                              parameter_save();
-  53   3                              ChangeScreenPage(0x02);
-  54   3                              saveSetting = 0;
-C51 COMPILER V7.50   MAIN                                                                  08/17/2014 20:32:46 PAGE 2   
+  34          void getSensorStatus()
+  35          {
+  36   1              //初始位置传感器
+  37   1              if(sensorStartPosi1 == 0)
+  38   1              {
+  39   2                      if(isStartPosition == 0)
+  40   2                      {
+  41   3                              refreshDisplay = 1;
+  42   3                      }
+  43   2                      isStartPosition = 1;
+  44   2              }
+  45   1              if(sensorStartPosi1 == 1)
+  46   1              {
+  47   2                      if(isStartPosition == 1)
+  48   2                      {
+  49   3                              refreshDisplay = 1;
+  50   3                      }
+  51   2                      isStartPosition = 0;
+  52   2              }
+  53   1              //电磁铁输入
+  54   1              if(electromagnetIn == 0)
+C51 COMPILER V7.50   MAIN                                                                  08/17/2014 20:59:32 PAGE 2   
 
-  55   3                      }
-  56   2                      //刷新显示      
-  57   2                      if(refreshDisplay)
-  58   2                      {
-  59   3                              parameter_send_screen();
-  60   3                              refreshDisplay = 0;
-  61   3                      }
-  62   2              }   
-  63   1      }
-  64          
-  65          
-  66          
-  67          
-  68          
-  69          
-  70          
-  71          
+  55   1              {
+  56   2                      electromagnetOut = 0;
+  57   2              }
+  58   1              else
+  59   1              {
+  60   2                      electromagnetOut = 1;
+  61   2              }
+  62   1      }
+  63          
+  64          /***************************************************************************/
+  65          // 主函数
+  66          // 参数：无
+  67          // 返回值：无   
+  68          /***************************************************************************/
+  69          void main()
+  70          {
+  71   1              delay_ms(500);
+  72   1              parameter_init();
+  73   1              uart_init();
+  74   1              //timer_init();
+  75   1              while(1)
+  76   1              {
+  77   2                      delay_us(100);
+  78   2                      getSensorStatus();
+  79   2                      if(saveSetting)
+  80   2                      {
+  81   3                              ChangeScreenPage(0x04);
+  82   3                              parameter_save();
+  83   3                              ChangeScreenPage(0x02);
+  84   3                              saveSetting = 0;
+  85   3                      }
+  86   2                      //刷新显示      
+  87   2                      if(refreshDisplay)
+  88   2                      {
+  89   3                              parameter_send_screen();
+  90   3                              refreshDisplay = 0;
+  91   3                      }
+  92   2              }   
+  93   1      }
+  94          
+  95          
+  96          
+  97          
+  98          
+  99          
+ 100          
+ 101          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    196    ----
+   CODE SIZE        =    249    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

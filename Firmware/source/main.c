@@ -31,6 +31,35 @@ void parameter_send_screen()
 	SendDataToScreen(0x0012, isStartPosition);
 }
 
+void getSensorStatus()
+{
+	//初始位置传感器
+	if(sensorStartPosi1 == 0)
+	{
+		if(isStartPosition == 0)
+		{
+			refreshDisplay = 1;
+		}
+		isStartPosition = 1;
+	}
+	if(sensorStartPosi1 == 1)
+	{
+		if(isStartPosition == 1)
+		{
+			refreshDisplay = 1;
+		}
+		isStartPosition = 0;
+	}
+	//电磁铁输入
+	if(electromagnetIn == 0)
+	{
+		electromagnetOut = 0;
+	}
+	else
+	{
+		electromagnetOut = 1;
+	}
+}
 
 /***************************************************************************/
 // 主函数
@@ -46,6 +75,7 @@ void main()
 	while(1)
 	{
 		delay_us(100);
+		getSensorStatus();
 		if(saveSetting)
 		{
 			ChangeScreenPage(0x04);

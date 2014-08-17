@@ -19,30 +19,16 @@
 // 引脚定义
 /***************************************************************************/
 //输入
-sbit sensorIn1 = P0^0; //传感器1
-sbit sensorIn2 = P0^1; //传感器2
-sbit sensorIn3 = P0^2; //传感器3
-sbit sensorIn4 = P0^3; //传感器4
-sbit sensorIn5 = P0^4; //传感器5
-sbit sensorIn6 = P0^5; //传感器6
-sbit sensorIn7 = P0^6; //传感器7
-sbit sensorIn8 = P0^7; //传感器8
-sbit sensorIn9 = P2^0; //传感器9
-sbit sensorIn10 = P2^1; //传感器10
-
-sbit KeyStart = P2^2; //开始按钮
-sbit KeyStop = P2^3; //急停按钮
+sbit sensorStartPosi1 = P0^0; //初始位置传感器1
+sbit sensorStartPosi2 = P0^1; //初始位置传感器2
+sbit keyMotorForward = P0^2; //电机向前信号
+sbit keyMotorBackward = P0^3; //电机向后信号
+sbit electromagnetIn = P0^4; //电磁铁输入
 
 //输出
-sbit cylinderOut1 = P1^0; //气缸1
-sbit cylinderOut2 = P1^1; //气缸2
-sbit cylinderOut3 = P2^4; //气缸3
-sbit cylinderOut4 = P2^5; //气缸4
-sbit cylinderOut5 = P1^4; //气缸5
-sbit montorOut = P1^5;		//电机输出
-sbit systemAlarmOut = P1^6; //系统警报
-
-sbit TestOut = P2^6;
+sbit motorDirection = P1^0; //电机方向
+sbit electromagnetOut = P1^1; //电磁铁输出
+sbit motorPWM = P2^6; //电机脉冲
 
 /***************************************************************************/
 // 参数声明
