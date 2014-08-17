@@ -196,215 +196,56 @@ void ReceiveData(BYTE dat)
 	}
 }
 
-void cancelcylinderAlarm()
-{
-	if(cylinderOut1 == 0)
-	{
-		cylinder1 = 1;
-	}
-	else
-	{
-		cylinder1 = 0;
-	}
-
-	if(cylinderOut2 == 0)
-	{
-		cylinder2 = 1;
-	}
-	else
-	{
-		cylinder2 = 0;
-	}
-
-	if(cylinderOut3 == 0)
-	{
-		cylinder3 = 1;
-	}
-	else
-	{
-		cylinder3 = 0;
-	}
-
-	if(cylinderOut4 == 0)
-	{
-		cylinder4 = 1;
-	}
-	else
-	{
-		cylinder4 = 0;
-	}
-
-	if(cylinderOut5 == 0)
-	{
-		cylinder5 = 1;
-	}
-	else
-	{
-		cylinder5 = 0;
-	}
-}
-
 void anyData()
 {
 	WORD dat = ((uartBuffer[4]<<8) | uartBuffer[5]);
 	refreshDisplay = 1;
-	if(uartBuffer[2] == 0x00)//运行模式	0：手动模式(停止)  1：自动模式(停止) 2：手动模式(启动) 3：自动模式(启动)   返回数据0xEE
+	if(uartBuffer[2] == 0x00)//脉冲个数
 	{
-		if(runMode == 0 || runMode == 2)
-		{
-			runMode = 1;	
-		}
-		else
-		{
-			runMode = 0;
-		}
-	}
-	else if(uartBuffer[2] == 0x01)	//电机状态	0：电机停止   1：电机启动  返回数据0xEE
-	{
-		if(montorMode == 0)
-		{
-			montorMode = 1;
-		}
-		else
-		{
-			montorMode = 0;
-		}
-	}
-	else if(uartBuffer[2] == 0x11) 	//时间设置1	字(int) 最大9.9
-	{
-		intervalTimer1 = dat;
+		pulseSettingNum =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x12)	//时间设置2	字(int)
+	else if(uartBuffer[2] == 0x02) //脉冲频率
 	{
-		intervalTimer2 = dat;
+		pulseSettingFreq =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x13)	//时间设置3	字(int)
+	else if(uartBuffer[2] == 0x04) //电机步进角
 	{
-		intervalTimer3 = dat;
+		motorStepAngle =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x14)	//时间设置4	字(int)
+	else if(uartBuffer[2] == 0x06) // 丝杆丝距
 	{
-		intervalTimer4 = dat;
+		screwPitch =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x15)	//时间设置5	字(int)
+	else if(uartBuffer[2] == 0x08)	//电机减速比
 	{
-		intervalTimer5 = dat;
+		motorReducGearRatio =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x16)	//时间设置6	字(int)
+	else if(uartBuffer[2] == 0x0A) //丝杆导程
 	{
-		intervalTimer6 = dat;
+		ballScrew =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x17)	//时间设置7	字(int)
+	else if(uartBuffer[2] == 0x0C) //电机旋转角
 	{
-	   	intervalTimer7 = dat;
+		motorRotationAngle =  dat;
 		saveSetting = 1;
 	}
-	else if(uartBuffer[2] == 0x18)	//报警设置 气缸1	字(int)
+	else if(uartBuffer[2] == 0x14) //初始化按钮
 	{
-		cylinderAlarm1 = dat;
-		saveSetting = 2;	
+		
 	}
-	else if(uartBuffer[2] == 0x19) 	//报警设置 气缸2	字(int)
+	else if(uartBuffer[2] == 0x16) //后退按钮
 	{
-		cylinderAlarm2 = dat;
-		saveSetting = 2;
+		
 	}
-	else if(uartBuffer[2] == 0x1A)	//报警设置 气缸3	字(int)
+	else if(uartBuffer[2] == 0x18) //前进按钮
 	{
-		cylinderAlarm3 = dat;
-		saveSetting = 2;
-	}
-	else if(uartBuffer[2] == 0x1B)	//报警设置 气缸4	字(int)
-	{
-		cylinderAlarm4 = dat;
-		saveSetting = 2;
-	}
-	else if(uartBuffer[2] == 0x1C)	//报警设置 气缸5	字(int)
-	{
-		cylinderAlarm5 = dat;
-		saveSetting = 2;
-	}
-	else if(uartBuffer[2] == 0x1D)	//复位计数按钮	返回数据0xEE
-	{
-		pieceCount = 0;
-	}
-	else if(uartBuffer[2] == 0x1E)	//手动模式 按钮 气缸1 	0：关闭  1：开启
-	{
-		if(cylinder1)
-		{
-			cylinder1 = 0;
-			cylinderOut1 = 1;
-		}
-		else
-		{
-			cylinder1 = 1;
-			cylinderOut1 = 0;	
-		}
-	}
-	else if(uartBuffer[2] == 0x1F)	//手动模式 按钮 气缸2	0：关闭  1：开启
-	{
-		if(cylinder2)
-		{
-			cylinder2 = 0;
-			cylinderOut2 = 1;
-		}
-		else
-		{
-			cylinder2 = 1;
-			cylinderOut2 = 0;	
-		}
-	}
-	else if(uartBuffer[2] == 0x20)	//手动模式 按钮 气缸3	0：关闭  1：开启
-	{
-		if(cylinder3)
-		{
-			cylinder3 = 0;
-			cylinderOut3 = 1;
-		}
-		else
-		{
-			cylinder3 = 1;
-			cylinderOut3 = 0;	
-		}
-	}
-	else if(uartBuffer[2] == 0x21)	//手动模式 按钮 气缸4	0：关闭  1：开启
-	{
-		if(cylinder4)
-		{
-			cylinder4 = 0;
-			cylinderOut4 = 1;
-		}
-		else
-		{
-			cylinder4 = 1;
-			cylinderOut4 = 0;	
-		}
-	}
-	else if(uartBuffer[2] == 0x22)	//手动模式 按钮 气缸5	0：关闭  1：开启
-	{
-		if(cylinder5)
-		{
-			cylinder5 = 0;
-			cylinderOut5 = 1;
-		}
-		else
-		{
-			cylinder5 = 1;
-			cylinderOut5 = 0;	
-		}
-	}
-	else if(uartBuffer[2] == 0x24)	//解除警报按钮	返回数据0xEE
-	{
-		alarmMode = 0;
-		cylinderAlarmCount = 0;
-		systemAlarmOut = 1;
-		cancelcylinderAlarm();
+		
 	}
 	uartReceiveOK = 1;	
 }

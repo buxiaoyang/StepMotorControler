@@ -50,41 +50,15 @@ sbit TestOut = P2^6;
 void parameter_init();
 unsigned char parameter_save();
 
-extern unsigned char runMode; //运行模式	0：手动模式(停止)  1：自动模式(停止) 2：手动模式(启动) 3：自动模式(启动)   返回数据0xEE
-extern unsigned char montorMode; //电机状态	0：电机停止   1：电机启动  返回数据0xEE
-extern unsigned char alarmMode; //报警状态	0：正常   1：报警
-extern unsigned char sensor1; //传感器1	0：无效  1：有效  2：错误
-extern unsigned char sensor2; //传感器2	0：无效  1：有效  2：错误
-extern unsigned char sensor3; //传感器3	0：无效  1：有效  2：错误
-extern unsigned char sensor4; //传感器4	0：无效  1：有效  2：错误
-extern unsigned char sensor5; //传感器5	0：无效  1：有效  2：错误
-extern unsigned char sensor6; //传感器6	0：无效  1：有效  2：错误
-extern unsigned char sensor7; //传感器7	0：无效  1：有效  2：错误
-extern unsigned char sensor8; //传感器8	0：无效  1：有效  2：错误
-extern unsigned char sensor9; //传感器9	0：无效  1：有效  2：错误
-extern unsigned char sensor10; //传感器10	0：无效  1：有效  2：错误
-
-extern unsigned char cylinder1; //气缸1	0：无效  1：有效  2：错误
-extern unsigned char cylinder2; //气缸2	0：无效  1：有效  2：错误
-extern unsigned char cylinder3; //气缸3	0：无效  1：有效  2：错误
-extern unsigned char cylinder4; //气缸4	0：无效  1：有效  2：错误
-extern unsigned char cylinder5; //气缸5	0：无效  1：有效  2：错误
-
-extern unsigned char intervalTimer1; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer2; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer3; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer4; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer5; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer6; //时间设置1	字(int) 最大9.9
-extern unsigned char intervalTimer7; //时间设置1	字(int) 最大9.9
-
-extern unsigned int cylinderAlarm1; //报警设置 气缸1	字(int)
-extern unsigned int cylinderAlarm2; //报警设置 气缸1	字(int)
-extern unsigned int cylinderAlarm3; //报警设置 气缸1	字(int)
-extern unsigned int cylinderAlarm4; //报警设置 气缸1	字(int)
-extern unsigned int cylinderAlarm5; //报警设置 气缸1	字(int)
-
-extern unsigned int pieceCount; //计件计数	字(int)
+extern unsigned char currentPosition; //当前位置 1~20
+extern unsigned int pulseSettingNum; //脉冲个数
+extern unsigned int pulseSettingFreq; //脉冲频率
+extern unsigned int motorStepAngle; //电机步进角
+extern unsigned int screwPitch; //丝杆丝距
+extern unsigned int motorReducGearRatio; //电机减速比
+extern unsigned int ballScrew; //丝杆导程
+extern unsigned int motorRotationAngle; //电机旋转角
+extern unsigned char isStartPosition; //初始位置
 
 extern unsigned char refreshDisplay; //刷新屏幕标志位 0 不刷新 1刷新
 
