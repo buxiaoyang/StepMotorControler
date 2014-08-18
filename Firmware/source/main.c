@@ -14,7 +14,7 @@
 #include <basefunc.h>
 #include <parameter.h>
 #include <uart.h>
-//#include <timer.h>
+#include <timer.h>
 #include <key.h>
 #include <dispatch.h>
 
@@ -71,7 +71,7 @@ void main()
 	delay_ms(500);
 	parameter_init();
 	uart_init();
-	//timer_init();
+	timer_init();
 	while(1)
 	{
 		delay_us(100);

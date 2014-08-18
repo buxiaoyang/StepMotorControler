@@ -59,7 +59,7 @@ void uart_init()
 #endif
 
     BRT = -(FOSC/32/BAUD);  //Set auto-reload vaule of baudrate generator
-    AUXR = 0x14;            //Baudrate generator work in 1T mode
+    AUXR |= 0x14;            //Baudrate generator work in 1T mode
     IE2 = 0x01;             //Enable UART2 interrupt
     EA = 1;                 //Open master interrupt switch
 
