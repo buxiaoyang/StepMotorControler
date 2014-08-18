@@ -75,6 +75,22 @@ void main()
 	while(1)
 	{
 		delay_us(100);
+		if(pulseSettingNumCount > 150)
+		{
+			timer_count --;
+		}
+		else
+		{
+			timer_count ++;
+		}
+		if(timer_count < 12)
+		{
+			timer_count = 12;	
+		}
+		else if(timer_count > 50)
+		{
+			timer_count = 50;
+		}
 		getSensorStatus();
 		if(saveSetting)
 		{

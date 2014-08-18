@@ -3,6 +3,7 @@
 #include <intrins.h>
 #include <parameter.h>
 #include <dispatch.h>
+#include <timer.h>
 
 #define FOSC 11059200L      //System frequency
 #define BAUD 115200         //UART baudrate
@@ -241,11 +242,15 @@ void anyData()
 	}
 	else if(uartBuffer[2] == 0x16) //后退按钮
 	{
-		
+		motorDirection = 0;
+		pulseSettingNumCount = pulseSettingNum;
+		timer_count = 50;	
 	}
 	else if(uartBuffer[2] == 0x18) //前进按钮
 	{
-		
+		motorDirection = 1;
+		pulseSettingNumCount = pulseSettingNum;
+		timer_count = 50;
 	}
 	uartReceiveOK = 1;	
 }

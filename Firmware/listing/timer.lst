@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   TIMER                                                                 08/18/2014 20:16:24 PAGE 1   
+C51 COMPILER V7.50   TIMER                                                                 08/18/2014 22:05:09 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE TIMER
@@ -35,46 +35,61 @@ line level    source
   24          
   25          /* define variables */
   26          WORD count;                         //1000 times counter
-  27          
-  28          //-----------------------------------------------
-  29          
-  30          /* Timer0 interrupt routine */
-  31          void tm0_isr() interrupt 1 using 1
-  32          {
-  33   1          TL0 = T1MS;                     //reload timer0 low byte
-  34   1          TH0 = T1MS >> 8;                //reload timer0 high byte
-  35   1          if (count-- == 0)               //1ms * 1000 -> 1s
-  36   1          {
-  37   2              count = 9;               //reset counter
-  38   2              motorPWM = ! motorPWM;
-  39   2          }
-  40   1      }
-  41          
-  42          //-----------------------------------------------
-  43          
-  44          /* main program */
-  45          void timer_init()
-  46          {
-  47   1      #ifdef MODE1T
-  48   1          AUXR |= 0x80;                    //timer0 work in 1T mode
-  49   1      #endif
-  50   1          TMOD = 0x01;                    //set timer0 as mode1 (16-bit)
-  51   1          TL0 = T1MS;                     //initial timer0 low byte
-  52   1          TH0 = T1MS >> 8;                //initial timer0 high byte
-  53   1          TR0 = 1;                        //timer0 start running
-C51 COMPILER V7.50   TIMER                                                                 08/18/2014 20:16:24 PAGE 2   
+  27          WORD timer_count;
+  28          WORD pulseSettingNumCount;
+  29          //-----------------------------------------------
+  30          
+  31          /* Timer0 interrupt routine */
+  32          void tm0_isr() interrupt 1 using 1
+  33          {
+  34   1          //TL0 = T1MS;                     //reload timer0 low byte
+  35   1          //TH0 = T1MS >> 8;                //reload timer0 high byte
+  36   1              TL0 = 0x91;             //设置定时初值
+  37   1              TH0 = 0xFF;             //设置定时初值
+  38   1          if (count-- == 0)               //1ms * 1000 -> 1s
+  39   1          {
+  40   2                      if(pulseSettingNumCount >0)
+  41   2                      {
+  42   3                              motorPWM = 1;
+  43   3                      
+  44   3                     
+  45   3                              pulseSettingNumCount --;
+  46   3                              motorPWM = ~motorPWM;
+  47   3                      }
+  48   2                      count = timer_count;               //reset counter
+  49   2          }
+  50   1              
+  51   1      }
+  52          
+  53          //-----------------------------------------------
+C51 COMPILER V7.50   TIMER                                                                 08/18/2014 22:05:09 PAGE 2   
 
-  54   1          ET0 = 1;                        //enable timer0 interrupt
-  55   1          EA = 1;                         //open global interrupt switch
-  56   1          count = 0;                      //initial counter
-  57   1      }
-  58          
+  54          
+  55          /* main program */
+  56          void timer_init()
+  57          {
+  58   1      #ifdef MODE1T
+  59   1          AUXR |= 0x80;                    //timer0 work in 1T mode
+  60   1      #endif
+  61   1          TMOD = 0x01;                    //set timer0 as mode1 (16-bit)
+  62   1          //TL0 = T1MS;                     //initial timer0 low byte
+  63   1          //TH0 = T1MS >> 8;                //initial timer0 high byte
+  64   1              TL0 = 0x91;             //设置定时初值
+  65   1              TH0 = 0xFF;             //设置定时初值
+  66   1          TR0 = 1;                        //timer0 start running
+  67   1          ET0 = 1;                        //enable timer0 interrupt
+  68   1          EA = 1;                         //open global interrupt switch
+  69   1          count = 0;                      //initial counter
+  70   1              timer_count = 50;
+  71   1              pulseSettingNumCount = 0;
+  72   1      }
+  73          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     80    ----
+   CODE SIZE        =    127    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =      2    ----
+   XDATA SIZE       =      6    ----
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
