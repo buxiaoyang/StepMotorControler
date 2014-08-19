@@ -238,18 +238,23 @@ void anyData()
 	}
 	else if(uartBuffer[2] == 0x14) //初始化按钮
 	{
-		
+		motorDirection = 0;
+		pulseSettingNumCount = 65535;
+		timer_count = 50;
+		initFlag = 1;
 	}
 	else if(uartBuffer[2] == 0x16) //后退按钮
 	{
 		motorDirection = 0;
 		pulseSettingNumCount = pulseSettingNum;
+		currentPosition --;
 		timer_count = 50;	
 	}
 	else if(uartBuffer[2] == 0x18) //前进按钮
 	{
 		motorDirection = 1;
 		pulseSettingNumCount = pulseSettingNum;
+		currentPosition ++;
 		timer_count = 50;
 	}
 	uartReceiveOK = 1;	

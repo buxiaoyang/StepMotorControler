@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -46,99 +46,141 @@ line level    source
   36   1              //初始位置传感器
   37   1              if(sensorStartPosi1 == 0)
   38   1              {
-  39   2                      if(isStartPosition == 0)
+  39   2                      if(isStartPosition1 == 0)
   40   2                      {
   41   3                              refreshDisplay = 1;
   42   3                      }
-  43   2                      isStartPosition = 1;
+  43   2                      isStartPosition1 = 1;
   44   2              }
   45   1              if(sensorStartPosi1 == 1)
   46   1              {
-  47   2                      if(isStartPosition == 1)
+  47   2                      if(isStartPosition1 == 1)
   48   2                      {
   49   3                              refreshDisplay = 1;
   50   3                      }
-  51   2                      isStartPosition = 0;
+  51   2                      isStartPosition1 = 0;
   52   2              }
-  53   1              //电磁铁输入
-  54   1              if(electromagnetIn == 0)
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 2   
+  53   1              //初始位置传感器2
+  54   1              if(sensorStartPosi2 == 0)
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 2   
 
   55   1              {
-  56   2                      electromagnetOut = 0;
-  57   2              }
-  58   1              else
-  59   1              {
-  60   2                      electromagnetOut = 1;
+  56   2                      if(isStartPosition2 == 0)
+  57   2                      {
+  58   3                              refreshDisplay = 1;
+  59   3                      }
+  60   2                      isStartPosition2 = 1;
   61   2              }
-  62   1      }
-  63          
-  64          /***************************************************************************/
-  65          // 主函数
-  66          // 参数：无
-  67          // 返回值：无   
-  68          /***************************************************************************/
-  69          void main()
-  70          {
-  71   1              delay_ms(500);
-  72   1              parameter_init();
-  73   1              uart_init();
-  74   1              timer_init();
-  75   1              while(1)
+  62   1              if(sensorStartPosi2 == 1)
+  63   1              {
+  64   2                      if(isStartPosition2 == 1)
+  65   2                      {
+  66   3                              refreshDisplay = 1;
+  67   3                      }
+  68   2                      isStartPosition2 = 0;
+  69   2              }
+  70   1              //电磁铁输入
+  71   1              if(electromagnetIn == 0)
+  72   1              {
+  73   2                      electromagnetOut = 0;
+  74   2              }
+  75   1              else
   76   1              {
-  77   2                      delay_us(100);
-  78   2                      testOut = ~testOut;
-  79   2                      //General the PWM
-  80   2                      if(pulseSettingNumCount > 20)
-  81   2                      {
-  82   3                              timer_count --;
-  83   3                      }
-  84   2                      else
-  85   2                      {
-  86   3                              timer_count ++;
-  87   3                      }
-  88   2                      if(timer_count < 1)
-  89   2                      {
-  90   3                              timer_count = 1;        
-  91   3                      }
-  92   2                      else if(timer_count > 50)
-  93   2                      {
-  94   3                              timer_count = 50;
-  95   3                      }
-  96   2                      //Get the sensor status
-  97   2                      getSensorStatus();
-  98   2                      //Save setting to eeprom
-  99   2                      if(saveSetting)
- 100   2                      {
- 101   3                              ChangeScreenPage(0x04);
- 102   3                              parameter_save();
- 103   3                              ChangeScreenPage(0x02);
- 104   3                              saveSetting = 0;
- 105   3                      }
- 106   2                      //刷新显示      
- 107   2                      if(refreshDisplay)
- 108   2                      {
- 109   3                              parameter_send_screen();
- 110   3                              refreshDisplay = 0;
+  77   2                      electromagnetOut = 1;
+  78   2              }
+  79   1      }
+  80          
+  81          /***************************************************************************/
+  82          // 主函数
+  83          // 参数：无
+  84          // 返回值：无   
+  85          /***************************************************************************/
+  86          void main()
+  87          {
+  88   1              uint count10ms = 0;
+  89   1              delay_ms(500);
+  90   1              parameter_init();
+  91   1              uart_init();
+  92   1              timer_init();
+  93   1              while(1)
+  94   1              {
+  95   2                      delay_us(100);
+  96   2                      //按键扫描
+  97   2                      count10ms++;
+  98   2                      if(count10ms > 29)
+  99   2                      {
+ 100   3                              Key_Scan();
+ 101   3                              count10ms = 0;
+ 102   3                      }
+ 103   2                      //General the PWM
+ 104   2                      if(pulseSettingNumCount > 20)
+ 105   2                      {
+ 106   3                              timer_count --;
+ 107   3                      }
+ 108   2                      else
+ 109   2                      {
+ 110   3                              timer_count ++;
  111   3                      }
- 112   2              }   
- 113   1      }
- 114          
- 115          
- 116          
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 3   
+ 112   2                      if(timer_count < 1)
+ 113   2                      {
+ 114   3                              timer_count = 1;        
+ 115   3                      }
+ 116   2                      else if(timer_count > 50)
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 3   
 
- 117          
- 118          
- 119          
- 120          
- 121          
+ 117   2                      {
+ 118   3                              timer_count = 50;
+ 119   3                      }
+ 120   2                      //Get the sensor status
+ 121   2                      getSensorStatus();
+ 122   2                      if(isStartPosition2 || isStartPosition1)
+ 123   2                      {
+ 124   3                              isStartPosition = 1;
+ 125   3                      }
+ 126   2                      else if(!isStartPosition2 && !isStartPosition1)
+ 127   2                      {
+ 128   3                              isStartPosition = 0;
+ 129   3                      }
+ 130   2                      //初始化过程中判断原点
+ 131   2                      if(initFlag == 1 && isStartPosition == 1)
+ 132   2                      {
+ 133   3                              pulseSettingNumCount = 4;
+ 134   3                              currentPosition = 1;
+ 135   3                              initFlag = 0;
+ 136   3                      }
+ 137   2                      //Save setting to eeprom
+ 138   2                      if(saveSetting)
+ 139   2                      {
+ 140   3                              //计算电机旋转角
+ 141   3                              //计算丝杆导程
+ 142   3                              //保存设置
+ 143   3                              ChangeScreenPage(0x04);
+ 144   3                              parameter_save();
+ 145   3                              ChangeScreenPage(0x02);
+ 146   3                              saveSetting = 0;
+ 147   3                      }
+ 148   2                      //刷新显示      
+ 149   2                      if(refreshDisplay)
+ 150   2                      {
+ 151   3                              parameter_send_screen();
+ 152   3                              refreshDisplay = 0;
+ 153   3                      }
+ 154   2              }   
+ 155   1      }
+ 156          
+ 157          
+ 158          
+ 159          
+ 160          
+ 161          
+ 162          
+ 163          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    347    ----
+   CODE SIZE        =    498    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----    ----
+   XDATA SIZE       =   ----       2
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

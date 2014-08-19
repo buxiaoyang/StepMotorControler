@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   KEY                                                                   08/19/2014 21:11:09 PAGE 1   
+C51 COMPILER V7.50   KEY                                                                   08/19/2014 22:14:22 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE KEY
@@ -13,24 +13,72 @@ line level    source
    3          #include <parameter.h>
    4          #include <key.h>
    5          #include <dispatch.h>
-   6          
+   6          #include <timer.h>
    7          
-   8          void Key_Scan(void);
-   9          
-  10          unsigned char Key_Scan_Steps = 0;               //0：初始状态 如果有按键按下则进入1
-  11                                                                                          //1：延迟10ms
-  12                                                                                          //2：如果按键确实按下则进入3
-  13                                                                                          //3：确定按键
-  14                                                                                          //4：如果按键释放则进入0
-  15          
-  16          void Key_Scan(void)
-  17          {
-  18   1      
-  19   1      }
+   8          
+   9          void Key_Scan(void);
+  10          
+  11          unsigned char Key_Scan_Steps = 0;               //0：初始状态 如果有按键按下则进入1
+  12                                                                                          //1：延迟10ms
+  13                                                                                          //2：如果按键确实按下则进入3
+  14                                                                                          //3：确定按键
+  15                                                                                          //4：如果按键释放则进入0
+  16          
+  17          void Key_Scan(void)
+  18          {
+  19   1              testOut = ~testOut;
+  20   1              switch(Key_Scan_Steps)
+  21   1              {
+  22   2                      case 0:
+  23   2                              if(keyMotorForward == 0 || keyMotorBackward == 0)
+  24   2                              {
+  25   3                                      Key_Scan_Steps = 1;
+  26   3                              }
+  27   2                      break;
+  28   2                      case 1:
+  29   2                              if(keyMotorForward == 0 || keyMotorBackward == 0)
+  30   2                              {
+  31   3                                      Key_Scan_Steps = 2;
+  32   3                              }
+  33   2                              else
+  34   2                              {
+  35   3                                      Key_Scan_Steps = 0;
+  36   3                              }
+  37   2                      break;
+  38   2                      case 2:
+  39   2                              if(keyMotorForward == 0) //电机前进
+  40   2                              {
+  41   3                                      motorDirection = 1;
+  42   3                                      pulseSettingNumCount = pulseSettingNum;
+  43   3                                      currentPosition ++;
+  44   3                                      timer_count = 50;
+  45   3                              }
+  46   2                              else if(keyMotorBackward == 0) //电机后退
+  47   2                              {
+  48   3                                      motorDirection = 0;
+  49   3                                      pulseSettingNumCount = pulseSettingNum;
+  50   3                                      currentPosition --;
+  51   3                                      timer_count = 50;
+  52   3                              }
+  53   2                              refreshDisplay = 1;
+  54   2                              Key_Scan_Steps = 3;
+C51 COMPILER V7.50   KEY                                                                   08/19/2014 22:14:22 PAGE 2   
+
+  55   2                      break;
+  56   2                      case 3:
+  57   2                              if(keyMotorBackward == 1 && keyMotorForward == 1)
+  58   2                              {
+  59   3                                      Key_Scan_Steps = 0;
+  60   3                              }
+  61   2                      break;
+  62   2                      default:
+  63   2                               _nop_();
+  64   2              }
+  65   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =      1    ----
+   CODE SIZE        =    134    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      1    ----
    PDATA SIZE       =   ----    ----

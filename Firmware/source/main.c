@@ -36,19 +36,36 @@ void getSensorStatus()
 	//初始位置传感器
 	if(sensorStartPosi1 == 0)
 	{
-		if(isStartPosition == 0)
+		if(isStartPosition1 == 0)
 		{
 			refreshDisplay = 1;
 		}
-		isStartPosition = 1;
+		isStartPosition1 = 1;
 	}
 	if(sensorStartPosi1 == 1)
 	{
-		if(isStartPosition == 1)
+		if(isStartPosition1 == 1)
 		{
 			refreshDisplay = 1;
 		}
-		isStartPosition = 0;
+		isStartPosition1 = 0;
+	}
+	//初始位置传感器2
+	if(sensorStartPosi2 == 0)
+	{
+		if(isStartPosition2 == 0)
+		{
+			refreshDisplay = 1;
+		}
+		isStartPosition2 = 1;
+	}
+	if(sensorStartPosi2 == 1)
+	{
+		if(isStartPosition2 == 1)
+		{
+			refreshDisplay = 1;
+		}
+		isStartPosition2 = 0;
 	}
 	//电磁铁输入
 	if(electromagnetIn == 0)
@@ -68,6 +85,7 @@ void getSensorStatus()
 /***************************************************************************/
 void main()
 {
+	uint count10ms = 0;
 	delay_ms(500);
 	parameter_init();
 	uart_init();
@@ -75,7 +93,13 @@ void main()
 	while(1)
 	{
 		delay_us(100);
-		testOut = ~testOut;
+		//按键扫描
+		count10ms++;
+		if(count10ms > 29)
+		{
+			Key_Scan();
+			count10ms = 0;
+		}
 		//General the PWM
 		if(pulseSettingNumCount > 20)
 		{
@@ -95,9 +119,27 @@ void main()
 		}
 		//Get the sensor status
 		getSensorStatus();
+		if(isStartPosition2 || isStartPosition1)
+		{
+			isStartPosition = 1;
+		}
+		else if(!isStartPosition2 && !isStartPosition1)
+		{
+			isStartPosition = 0;
+		}
+		//初始化过程中判断原点
+		if(initFlag == 1 && isStartPosition == 1)
+		{
+			pulseSettingNumCount = 4;
+			currentPosition = 1;
+			initFlag = 0;
+		}
 		//Save setting to eeprom
 		if(saveSetting)
 		{
+			//计算电机旋转角
+			//计算丝杆导程
+			//保存设置
 			ChangeScreenPage(0x04);
 			parameter_save();
 			ChangeScreenPage(0x02);

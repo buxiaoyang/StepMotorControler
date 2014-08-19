@@ -47,7 +47,10 @@ extern unsigned int motorReducGearRatio; //电机减速比
 extern unsigned int ballScrew; //丝杆导程
 extern unsigned int motorRotationAngle; //电机旋转角
 extern unsigned char isStartPosition; //初始位置
+extern unsigned char isStartPosition1; //初始位置
+extern unsigned char isStartPosition2; //初始位置
 
 extern unsigned char refreshDisplay; //刷新屏幕标志位 0 不刷新 1刷新
 
+extern unsigned char initFlag; //初始化标志位
 #endif

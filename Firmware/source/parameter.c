@@ -26,10 +26,12 @@ unsigned int motorReducGearRatio; //电机减速比
 unsigned int ballScrew; //丝杆导程
 unsigned int motorRotationAngle; //电机旋转角
 unsigned char isStartPosition; //初始位置
+unsigned char isStartPosition1; //初始位置
+unsigned char isStartPosition2; //初始位置
 
 unsigned char refreshDisplay; //刷新屏幕标志位 0 不刷新 1刷新
 
-
+unsigned char initFlag; //初始化标志位
 
 /***************************************************************************/
 // 读取参数
@@ -54,10 +56,15 @@ unsigned char parameter_read()
 	}
 	else
 	{
+		pulseSettingNum = 1600;
+		screwPitch = 12;
+		motorReducGearRatio = 1;
+		ballScrew = 12;
+		motorRotationAngle = 360;
 		result = 0;
 	}
-	pulseSettingFreq = 0x17B6;
-	motorStepAngle = 0x00E1;
+	pulseSettingFreq = 6070;
+	motorStepAngle = 225;
 	return result;
 }
 
@@ -81,6 +88,7 @@ void parameter_init()
 	}
 	isStartPosition = 0; //初始位置
 	refreshDisplay = 1;
+	initFlag = 0;
 }
 
 /***************************************************************************/
