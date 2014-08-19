@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 1   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 21:11:09 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE UART
@@ -62,7 +62,7 @@ line level    source
   52          void uart_init()
   53          {
   54   1      #if (PARITYBIT == NONE_PARITY)
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 2   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 21:11:09 PAGE 2   
 
   55   1          S2CON = 0x50;           //8-bit variable UART
   56   1      #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
@@ -126,7 +126,7 @@ line level    source
  114   2          }
  115   1          busy = 1;
  116   1          S2BUF = ACC;            //Send data to UART2 buffer
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 3   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 21:11:09 PAGE 3   
 
  117   1      }
  118          
@@ -190,7 +190,7 @@ line level    source
  176   2                              {
  177   3                                      receiveSteps = 0;
  178   3                              }
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 4   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 21:11:09 PAGE 4   
 
  179   2                      break;
  180   2                      case 2:
@@ -224,13 +224,13 @@ line level    source
  208   2              }
  209   1              else if(uartBuffer[2] == 0x02) //脉冲频率
  210   1              {
- 211   2                      pulseSettingFreq =  dat;
- 212   2                      saveSetting = 1;
+ 211   2                      //pulseSettingFreq =  dat;
+ 212   2                      //saveSetting = 1;
  213   2              }
  214   1              else if(uartBuffer[2] == 0x04) //电机步进角
  215   1              {
- 216   2                      motorStepAngle =  dat;
- 217   2                      saveSetting = 1;
+ 216   2                      //motorStepAngle =  dat;
+ 217   2                      //saveSetting = 1;
  218   2              }
  219   1              else if(uartBuffer[2] == 0x06) // 丝杆丝距
  220   1              {
@@ -254,7 +254,7 @@ line level    source
  238   2              }
  239   1              else if(uartBuffer[2] == 0x14) //初始化按钮
  240   1              {
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 5   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 21:11:09 PAGE 5   
 
  241   2                      
  242   2              }
@@ -275,7 +275,7 @@ line level    source
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    462    ----
+   CODE SIZE        =    457    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     19       3
    PDATA SIZE       =   ----    ----

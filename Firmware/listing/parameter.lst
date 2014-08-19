@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 20:55:50 PAGE 1   
+C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 21:11:07 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE PARAMETER
@@ -54,82 +54,84 @@ line level    source
   44   1              if(IapReadByte(IAP_ADDRESS+200) == 0xEE)
   45   1              {       
   46   2                      pulseSettingNum = ((IapReadByte(IAP_ADDRESS+0) << 8) | IapReadByte(IAP_ADDRESS+1));
-  47   2                      pulseSettingFreq = ((IapReadByte(IAP_ADDRESS+2) << 8) | IapReadByte(IAP_ADDRESS+3));
-  48   2                      motorStepAngle = ((IapReadByte(IAP_ADDRESS+4) << 8) | IapReadByte(IAP_ADDRESS+5));
+  47   2                      //pulseSettingFreq = ((IapReadByte(IAP_ADDRESS+2) << 8) | IapReadByte(IAP_ADDRESS+3));
+  48   2                      //motorStepAngle = ((IapReadByte(IAP_ADDRESS+4) << 8) | IapReadByte(IAP_ADDRESS+5));
   49   2                      screwPitch = ((IapReadByte(IAP_ADDRESS+6) << 8) | IapReadByte(IAP_ADDRESS+7));
   50   2                      motorReducGearRatio = ((IapReadByte(IAP_ADDRESS+8) << 8) | IapReadByte(IAP_ADDRESS+9));
   51   2                      ballScrew = ((IapReadByte(IAP_ADDRESS+10) << 8) | IapReadByte(IAP_ADDRESS+11));
   52   2                      motorRotationAngle = ((IapReadByte(IAP_ADDRESS+12) << 8) | IapReadByte(IAP_ADDRESS+13));
   53   2                      result = 1;
   54   2              }
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 20:55:50 PAGE 2   
+C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 21:11:07 PAGE 2   
 
   55   1              else
   56   1              {
   57   2                      result = 0;
   58   2              }
-  59   1              return result;
-  60   1      }
-  61          
-  62          /***************************************************************************/
-  63          // 参数初始化函数
-  64          // 参数：无
-  65          // 返回值：无   
-  66          /***************************************************************************/
-  67          void parameter_init()
-  68          {
-  69   1              currentPosition = 1; //当前位置 1~20
-  70   1              if(!parameter_read())
-  71   1              {
-  72   2                      pulseSettingNum = 400; //脉冲个数
-  73   2                      pulseSettingFreq = 400; //脉冲频率
-  74   2                      motorStepAngle = 180; //电机步进角
-  75   2                      screwPitch = 200; //丝杆丝距
-  76   2                      motorReducGearRatio = 100; //电机减速比
-  77   2                      ballScrew = 200; //丝杆导程
-  78   2                      motorRotationAngle = 36000; //电机旋转角
-  79   2              }
-  80   1              isStartPosition = 0; //初始位置
-  81   1              refreshDisplay = 1;
-  82   1      }
-  83          
-  84          /***************************************************************************/
-  85          // 参数保存到eeprom
-  86          // 参数：无
-  87          // 返回值：0失败 1成功  
-  88          /***************************************************************************/
-  89          unsigned char parameter_save()
-  90          {
-  91   1              
-  92   1              unsigned char result = 1;
-  93   1          delay_ms(10);                      //Delay
-  94   1              IapEraseSector(IAP_ADDRESS); //擦除EEPROM
-  95   1              IapProgramByte(IAP_ADDRESS+0, (BYTE)(pulseSettingNum>>8));
-  96   1              IapProgramByte(IAP_ADDRESS+1, (BYTE)pulseSettingNum);
-  97   1              IapProgramByte(IAP_ADDRESS+2, (BYTE)(pulseSettingFreq>>8));
-  98   1              IapProgramByte(IAP_ADDRESS+3, (BYTE)pulseSettingFreq);
-  99   1              IapProgramByte(IAP_ADDRESS+4, (BYTE)(motorStepAngle>>8));
- 100   1              IapProgramByte(IAP_ADDRESS+5, (BYTE)motorStepAngle);
- 101   1              IapProgramByte(IAP_ADDRESS+6, (BYTE)(screwPitch>>8));
- 102   1              IapProgramByte(IAP_ADDRESS+7, (BYTE)screwPitch);
- 103   1              IapProgramByte(IAP_ADDRESS+8, (BYTE)(motorReducGearRatio>>8));
- 104   1              IapProgramByte(IAP_ADDRESS+9, (BYTE)motorReducGearRatio);
- 105   1              IapProgramByte(IAP_ADDRESS+10, (BYTE)(ballScrew>>8));
- 106   1              IapProgramByte(IAP_ADDRESS+11, (BYTE)ballScrew);
- 107   1              IapProgramByte(IAP_ADDRESS+12, (BYTE)(motorRotationAngle>>8));
- 108   1              IapProgramByte(IAP_ADDRESS+13, (BYTE)motorRotationAngle);
- 109   1              IapProgramByte(IAP_ADDRESS+200, 0xEE); //写入标志位
- 110   1              refreshDisplay = 0;
- 111   1              return result;
- 112   1      }
- 113          
- 114          
+  59   1              pulseSettingFreq = 0x17B6;
+  60   1              motorStepAngle = 0x00E1;
+  61   1              return result;
+  62   1      }
+  63          
+  64          /***************************************************************************/
+  65          // 参数初始化函数
+  66          // 参数：无
+  67          // 返回值：无   
+  68          /***************************************************************************/
+  69          void parameter_init()
+  70          {
+  71   1              currentPosition = 1; //当前位置 1~20
+  72   1              if(!parameter_read())
+  73   1              {
+  74   2                      pulseSettingNum = 400; //脉冲个数
+  75   2                      pulseSettingFreq = 400; //脉冲频率
+  76   2                      motorStepAngle = 180; //电机步进角
+  77   2                      screwPitch = 200; //丝杆丝距
+  78   2                      motorReducGearRatio = 100; //电机减速比
+  79   2                      ballScrew = 200; //丝杆导程
+  80   2                      motorRotationAngle = 36000; //电机旋转角
+  81   2              }
+  82   1              isStartPosition = 0; //初始位置
+  83   1              refreshDisplay = 1;
+  84   1      }
+  85          
+  86          /***************************************************************************/
+  87          // 参数保存到eeprom
+  88          // 参数：无
+  89          // 返回值：0失败 1成功  
+  90          /***************************************************************************/
+  91          unsigned char parameter_save()
+  92          {
+  93   1              
+  94   1              unsigned char result = 1;
+  95   1          delay_ms(10);                      //Delay
+  96   1              IapEraseSector(IAP_ADDRESS); //擦除EEPROM
+  97   1              IapProgramByte(IAP_ADDRESS+0, (BYTE)(pulseSettingNum>>8));
+  98   1              IapProgramByte(IAP_ADDRESS+1, (BYTE)pulseSettingNum);
+  99   1              IapProgramByte(IAP_ADDRESS+2, (BYTE)(pulseSettingFreq>>8));
+ 100   1              IapProgramByte(IAP_ADDRESS+3, (BYTE)pulseSettingFreq);
+ 101   1              IapProgramByte(IAP_ADDRESS+4, (BYTE)(motorStepAngle>>8));
+ 102   1              IapProgramByte(IAP_ADDRESS+5, (BYTE)motorStepAngle);
+ 103   1              IapProgramByte(IAP_ADDRESS+6, (BYTE)(screwPitch>>8));
+ 104   1              IapProgramByte(IAP_ADDRESS+7, (BYTE)screwPitch);
+ 105   1              IapProgramByte(IAP_ADDRESS+8, (BYTE)(motorReducGearRatio>>8));
+ 106   1              IapProgramByte(IAP_ADDRESS+9, (BYTE)motorReducGearRatio);
+ 107   1              IapProgramByte(IAP_ADDRESS+10, (BYTE)(ballScrew>>8));
+ 108   1              IapProgramByte(IAP_ADDRESS+11, (BYTE)ballScrew);
+ 109   1              IapProgramByte(IAP_ADDRESS+12, (BYTE)(motorRotationAngle>>8));
+ 110   1              IapProgramByte(IAP_ADDRESS+13, (BYTE)motorRotationAngle);
+ 111   1              IapProgramByte(IAP_ADDRESS+200, 0xEE); //写入标志位
+ 112   1              refreshDisplay = 0;
+ 113   1              return result;
+ 114   1      }
+ 115          
+ 116          
+C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 21:11:07 PAGE 3   
 
 
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 20:55:50 PAGE 3   
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    609    ----
+   CODE SIZE        =    552    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     17       2
    PDATA SIZE       =   ----    ----

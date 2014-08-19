@@ -208,13 +208,13 @@ void anyData()
 	}
 	else if(uartBuffer[2] == 0x02) //脉冲频率
 	{
-		pulseSettingFreq =  dat;
-		saveSetting = 1;
+		//pulseSettingFreq =  dat;
+		//saveSetting = 1;
 	}
 	else if(uartBuffer[2] == 0x04) //电机步进角
 	{
-		motorStepAngle =  dat;
-		saveSetting = 1;
+		//motorStepAngle =  dat;
+		//saveSetting = 1;
 	}
 	else if(uartBuffer[2] == 0x06) // 丝杆丝距
 	{

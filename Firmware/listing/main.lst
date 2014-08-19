@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52   2              }
   53   1              //电磁铁输入
   54   1              if(electromagnetIn == 0)
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 2   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 2   
 
   55   1              {
   56   2                      electromagnetOut = 0;
@@ -88,48 +88,51 @@ line level    source
   76   1              {
   77   2                      delay_us(100);
   78   2                      testOut = ~testOut;
-  79   2                      if(pulseSettingNumCount > 20)
-  80   2                      {
-  81   3                              timer_count --;
-  82   3                      }
-  83   2                      else
-  84   2                      {
-  85   3                              timer_count ++;
-  86   3                      }
-  87   2                      if(timer_count < 1)
-  88   2                      {
-  89   3                              timer_count = 1;        
-  90   3                      }
-  91   2                      else if(timer_count > 50)
-  92   2                      {
-  93   3                              timer_count = 50;
-  94   3                      }
-  95   2                      getSensorStatus();
-  96   2                      if(saveSetting)
-  97   2                      {
-  98   3                              ChangeScreenPage(0x04);
-  99   3                              parameter_save();
- 100   3                              ChangeScreenPage(0x02);
- 101   3                              saveSetting = 0;
- 102   3                      }
- 103   2                      //刷新显示      
- 104   2                      if(refreshDisplay)
- 105   2                      {
- 106   3                              parameter_send_screen();
- 107   3                              refreshDisplay = 0;
- 108   3                      }
- 109   2              }   
- 110   1      }
- 111          
- 112          
- 113          
+  79   2                      //General the PWM
+  80   2                      if(pulseSettingNumCount > 20)
+  81   2                      {
+  82   3                              timer_count --;
+  83   3                      }
+  84   2                      else
+  85   2                      {
+  86   3                              timer_count ++;
+  87   3                      }
+  88   2                      if(timer_count < 1)
+  89   2                      {
+  90   3                              timer_count = 1;        
+  91   3                      }
+  92   2                      else if(timer_count > 50)
+  93   2                      {
+  94   3                              timer_count = 50;
+  95   3                      }
+  96   2                      //Get the sensor status
+  97   2                      getSensorStatus();
+  98   2                      //Save setting to eeprom
+  99   2                      if(saveSetting)
+ 100   2                      {
+ 101   3                              ChangeScreenPage(0x04);
+ 102   3                              parameter_save();
+ 103   3                              ChangeScreenPage(0x02);
+ 104   3                              saveSetting = 0;
+ 105   3                      }
+ 106   2                      //刷新显示      
+ 107   2                      if(refreshDisplay)
+ 108   2                      {
+ 109   3                              parameter_send_screen();
+ 110   3                              refreshDisplay = 0;
+ 111   3                      }
+ 112   2              }   
+ 113   1      }
  114          
  115          
  116          
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 3   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 21:11:06 PAGE 3   
 
  117          
  118          
+ 119          
+ 120          
+ 121          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
