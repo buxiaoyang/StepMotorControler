@@ -75,7 +75,7 @@ void main()
 	while(1)
 	{
 		delay_us(100);
-		if(pulseSettingNumCount > 150)
+		if(pulseSettingNumCount > 200)
 		{
 			timer_count --;
 		}
@@ -83,9 +83,9 @@ void main()
 		{
 			timer_count ++;
 		}
-		if(timer_count < 12)
+		if(timer_count < 5)
 		{
-			timer_count = 12;	
+			timer_count = 5;	
 		}
 		else if(timer_count > 50)
 		{
