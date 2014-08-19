@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:27:37 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52   2              }
   53   1              //电磁铁输入
   54   1              if(electromagnetIn == 0)
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:27:37 PAGE 2   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 2   
 
   55   1              {
   56   2                      electromagnetOut = 0;
@@ -87,52 +87,53 @@ line level    source
   75   1              while(1)
   76   1              {
   77   2                      delay_us(100);
-  78   2                      if(pulseSettingNumCount > 200)
-  79   2                      {
-  80   3                              timer_count --;
-  81   3                      }
-  82   2                      else
-  83   2                      {
-  84   3                              timer_count ++;
-  85   3                      }
-  86   2                      if(timer_count < 5)
-  87   2                      {
-  88   3                              timer_count = 5;        
-  89   3                      }
-  90   2                      else if(timer_count > 50)
-  91   2                      {
-  92   3                              timer_count = 50;
-  93   3                      }
-  94   2                      getSensorStatus();
-  95   2                      if(saveSetting)
-  96   2                      {
-  97   3                              ChangeScreenPage(0x04);
-  98   3                              parameter_save();
-  99   3                              ChangeScreenPage(0x02);
- 100   3                              saveSetting = 0;
- 101   3                      }
- 102   2                      //刷新显示      
- 103   2                      if(refreshDisplay)
- 104   2                      {
- 105   3                              parameter_send_screen();
- 106   3                              refreshDisplay = 0;
- 107   3                      }
- 108   2              }   
- 109   1      }
- 110          
+  78   2                      testOut = ~testOut;
+  79   2                      if(pulseSettingNumCount > 20)
+  80   2                      {
+  81   3                              timer_count --;
+  82   3                      }
+  83   2                      else
+  84   2                      {
+  85   3                              timer_count ++;
+  86   3                      }
+  87   2                      if(timer_count < 1)
+  88   2                      {
+  89   3                              timer_count = 1;        
+  90   3                      }
+  91   2                      else if(timer_count > 50)
+  92   2                      {
+  93   3                              timer_count = 50;
+  94   3                      }
+  95   2                      getSensorStatus();
+  96   2                      if(saveSetting)
+  97   2                      {
+  98   3                              ChangeScreenPage(0x04);
+  99   3                              parameter_save();
+ 100   3                              ChangeScreenPage(0x02);
+ 101   3                              saveSetting = 0;
+ 102   3                      }
+ 103   2                      //刷新显示      
+ 104   2                      if(refreshDisplay)
+ 105   2                      {
+ 106   3                              parameter_send_screen();
+ 107   3                              refreshDisplay = 0;
+ 108   3                      }
+ 109   2              }   
+ 110   1      }
  111          
  112          
  113          
  114          
  115          
  116          
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:27:37 PAGE 3   
+C51 COMPILER V7.50   MAIN                                                                  08/19/2014 20:55:49 PAGE 3   
 
  117          
+ 118          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    346    ----
+   CODE SIZE        =    347    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----

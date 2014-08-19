@@ -75,7 +75,9 @@ void main()
 	while(1)
 	{
 		delay_us(100);
-		if(pulseSettingNumCount > 200)
+		testOut = ~testOut;
+		//General the PWM
+		if(pulseSettingNumCount > 20)
 		{
 			timer_count --;
 		}
@@ -83,15 +85,17 @@ void main()
 		{
 			timer_count ++;
 		}
-		if(timer_count < 5)
+		if(timer_count < 1)
 		{
-			timer_count = 5;	
+			timer_count = 1;	
 		}
 		else if(timer_count > 50)
 		{
 			timer_count = 50;
 		}
+		//Get the sensor status
 		getSensorStatus();
+		//Save setting to eeprom
 		if(saveSetting)
 		{
 			ChangeScreenPage(0x04);

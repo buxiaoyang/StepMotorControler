@@ -33,21 +33,18 @@ void tm0_isr() interrupt 1 using 1
 {
     //TL0 = T1MS;                     //reload timer0 low byte
     //TH0 = T1MS >> 8;                //reload timer0 high byte
-	TL0 = 0x91;		//设置定时初值
-	TH0 = 0xFF;		//设置定时初值
+	TL0 = 0x8B;		//设置定时初值
+	TH0 = 0xFC;		//设置定时初值
     if (count-- == 0)               //1ms * 1000 -> 1s
     {
 		if(pulseSettingNumCount >0)
 		{
 			motorPWM = 1;
-	        
-	       
 			pulseSettingNumCount --;
 			motorPWM = ~motorPWM;
 		}
 		count = timer_count;               //reset counter
     }
-	
 }
 
 //-----------------------------------------------
@@ -61,8 +58,8 @@ void timer_init()
     TMOD = 0x01;                    //set timer0 as mode1 (16-bit)
     //TL0 = T1MS;                     //initial timer0 low byte
     //TH0 = T1MS >> 8;                //initial timer0 high byte
-	TL0 = 0x91;		//设置定时初值
-	TH0 = 0xFF;		//设置定时初值
+	TL0 = 0x8B;		//设置定时初值
+	TH0 = 0xFC;		//设置定时初值
     TR0 = 1;                        //timer0 start running
     ET0 = 1;                        //enable timer0 interrupt
     EA = 1;                         //open global interrupt switch

@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:27:38 PAGE 1   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE UART
@@ -62,7 +62,7 @@ line level    source
   52          void uart_init()
   53          {
   54   1      #if (PARITYBIT == NONE_PARITY)
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:27:38 PAGE 2   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 2   
 
   55   1          S2CON = 0x50;           //8-bit variable UART
   56   1      #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
@@ -126,7 +126,7 @@ line level    source
  114   2          }
  115   1          busy = 1;
  116   1          S2BUF = ACC;            //Send data to UART2 buffer
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:27:38 PAGE 3   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 3   
 
  117   1      }
  118          
@@ -190,7 +190,7 @@ line level    source
  176   2                              {
  177   3                                      receiveSteps = 0;
  178   3                              }
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:27:38 PAGE 4   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 4   
 
  179   2                      break;
  180   2                      case 2:
@@ -254,7 +254,7 @@ line level    source
  238   2              }
  239   1              else if(uartBuffer[2] == 0x14) //≥ı ºªØ∞¥≈•
  240   1              {
-C51 COMPILER V7.50   UART                                                                  08/19/2014 20:27:38 PAGE 5   
+C51 COMPILER V7.50   UART                                                                  08/19/2014 20:55:51 PAGE 5   
 
  241   2                      
  242   2              }
