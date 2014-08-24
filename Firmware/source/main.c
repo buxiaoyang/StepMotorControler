@@ -140,11 +140,12 @@ void main()
 		{
 			//计算电机旋转角
 			temp = (unsigned long)pulseSettingNum*motorStepAngle;
-			motorRotationAngle = temp/100;
+			motorRotationAngle = temp/motorReducGearRatio;
 			//计算丝杆导程
 			temp = (unsigned long)pulseSettingNum*motorStepAngle;
 			temp = 	(unsigned long)temp * screwPitch;
-			ballScrew = temp/360000;
+			temp = 	(unsigned long)temp / motorReducGearRatio;
+			ballScrew = temp/3600;
 			//保存设置
 			ChangeScreenPage(0x04);
 			parameter_save();

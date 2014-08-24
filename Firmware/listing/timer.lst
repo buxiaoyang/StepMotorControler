@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:21:50 PAGE 1   
+C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:57:13 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE TIMER
@@ -62,7 +62,7 @@ line level    source
   51          
   52          /* main program */
   53          void timer_init()
-C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:21:50 PAGE 2   
+C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:57:13 PAGE 2   
 
   54          {
   55   1      #ifdef MODE1T
