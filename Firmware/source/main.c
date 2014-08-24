@@ -86,6 +86,7 @@ void getSensorStatus()
 void main()
 {
 	uint count10ms = 0;
+	unsigned long temp = 0;
 	delay_ms(500);
 	parameter_init();
 	uart_init();
@@ -138,12 +139,18 @@ void main()
 		if(saveSetting)
 		{
 			//计算电机旋转角
+			temp = (unsigned long)pulseSettingNum*motorStepAngle;
+			motorRotationAngle = temp/100;
 			//计算丝杆导程
+			temp = (unsigned long)pulseSettingNum*motorStepAngle;
+			temp = 	(unsigned long)temp * screwPitch;
+			ballScrew = temp/360000;
 			//保存设置
 			ChangeScreenPage(0x04);
 			parameter_save();
 			ChangeScreenPage(0x02);
 			saveSetting = 0;
+			refreshDisplay = 1;
 		}
 		//刷新显示	
 		if(refreshDisplay)

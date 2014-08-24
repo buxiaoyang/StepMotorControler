@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   UART                                                                  08/19/2014 22:14:22 PAGE 1   
+C51 COMPILER V7.50   UART                                                                  08/24/2014 16:21:49 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE UART
@@ -62,7 +62,7 @@ line level    source
   52          void uart_init()
   53          {
   54   1      #if (PARITYBIT == NONE_PARITY)
-C51 COMPILER V7.50   UART                                                                  08/19/2014 22:14:22 PAGE 2   
+C51 COMPILER V7.50   UART                                                                  08/24/2014 16:21:49 PAGE 2   
 
   55   1          S2CON = 0x50;           //8-bit variable UART
   56   1      #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
@@ -126,7 +126,7 @@ line level    source
  114   2          }
  115   1          busy = 1;
  116   1          S2BUF = ACC;            //Send data to UART2 buffer
-C51 COMPILER V7.50   UART                                                                  08/19/2014 22:14:22 PAGE 3   
+C51 COMPILER V7.50   UART                                                                  08/24/2014 16:21:49 PAGE 3   
 
  117   1      }
  118          
@@ -190,7 +190,7 @@ line level    source
  176   2                              {
  177   3                                      receiveSteps = 0;
  178   3                              }
-C51 COMPILER V7.50   UART                                                                  08/19/2014 22:14:22 PAGE 4   
+C51 COMPILER V7.50   UART                                                                  08/24/2014 16:21:49 PAGE 4   
 
  179   2                      break;
  180   2                      case 2:
@@ -216,7 +216,7 @@ line level    source
  200          void anyData()
  201          {
  202   1              WORD dat = ((uartBuffer[4]<<8) | uartBuffer[5]);
- 203   1              refreshDisplay = 1;
+ 203   1              
  204   1              if(uartBuffer[2] == 0x00)//脉冲个数
  205   1              {
  206   2                      pulseSettingNum =  dat;
@@ -254,33 +254,36 @@ line level    source
  238   2              }
  239   1              else if(uartBuffer[2] == 0x14) //初始化按钮
  240   1              {
-C51 COMPILER V7.50   UART                                                                  08/19/2014 22:14:22 PAGE 5   
+C51 COMPILER V7.50   UART                                                                  08/24/2014 16:21:49 PAGE 5   
 
  241   2                      motorDirection = 0;
  242   2                      pulseSettingNumCount = 65535;
  243   2                      timer_count = 50;
  244   2                      initFlag = 1;
- 245   2              }
- 246   1              else if(uartBuffer[2] == 0x16) //后退按钮
- 247   1              {
- 248   2                      motorDirection = 0;
- 249   2                      pulseSettingNumCount = pulseSettingNum;
- 250   2                      currentPosition --;
- 251   2                      timer_count = 50;       
- 252   2              }
- 253   1              else if(uartBuffer[2] == 0x18) //前进按钮
- 254   1              {
- 255   2                      motorDirection = 1;
- 256   2                      pulseSettingNumCount = pulseSettingNum;
- 257   2                      currentPosition ++;
- 258   2                      timer_count = 50;
- 259   2              }
- 260   1              uartReceiveOK = 1;      
- 261   1      }
+ 245   2                      refreshDisplay = 1;
+ 246   2              }
+ 247   1              else if(uartBuffer[2] == 0x16) //后退按钮
+ 248   1              {
+ 249   2                      motorDirection = 0;
+ 250   2                      pulseSettingNumCount = pulseSettingNum;
+ 251   2                      currentPosition --;
+ 252   2                      timer_count = 50;
+ 253   2                      refreshDisplay = 1;     
+ 254   2              }
+ 255   1              else if(uartBuffer[2] == 0x18) //前进按钮
+ 256   1              {
+ 257   2                      motorDirection = 1;
+ 258   2                      pulseSettingNumCount = pulseSettingNum;
+ 259   2                      currentPosition ++;
+ 260   2                      timer_count = 50;
+ 261   2                      refreshDisplay = 1;
+ 262   2              }
+ 263   1              uartReceiveOK = 1;      
+ 264   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    495    ----
+   CODE SIZE        =    512    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =     19       3
    PDATA SIZE       =   ----    ----

@@ -200,7 +200,7 @@ void ReceiveData(BYTE dat)
 void anyData()
 {
 	WORD dat = ((uartBuffer[4]<<8) | uartBuffer[5]);
-	refreshDisplay = 1;
+	
 	if(uartBuffer[2] == 0x00)//脉冲个数
 	{
 		pulseSettingNum =  dat;
@@ -242,13 +242,15 @@ void anyData()
 		pulseSettingNumCount = 65535;
 		timer_count = 50;
 		initFlag = 1;
+		refreshDisplay = 1;
 	}
 	else if(uartBuffer[2] == 0x16) //后退按钮
 	{
 		motorDirection = 0;
 		pulseSettingNumCount = pulseSettingNum;
 		currentPosition --;
-		timer_count = 50;	
+		timer_count = 50;
+		refreshDisplay = 1;	
 	}
 	else if(uartBuffer[2] == 0x18) //前进按钮
 	{
@@ -256,6 +258,7 @@ void anyData()
 		pulseSettingNumCount = pulseSettingNum;
 		currentPosition ++;
 		timer_count = 50;
+		refreshDisplay = 1;
 	}
 	uartReceiveOK = 1;	
 }

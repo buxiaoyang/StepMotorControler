@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 22:14:21 PAGE 1   
+C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:21:48 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE PARAMETER
@@ -62,7 +62,7 @@ line level    source
   52   2                      motorReducGearRatio = ((IapReadByte(IAP_ADDRESS+8) << 8) | IapReadByte(IAP_ADDRESS+9));
   53   2                      ballScrew = ((IapReadByte(IAP_ADDRESS+10) << 8) | IapReadByte(IAP_ADDRESS+11));
   54   2                      motorRotationAngle = ((IapReadByte(IAP_ADDRESS+12) << 8) | IapReadByte(IAP_ADDRESS+13));
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 22:14:21 PAGE 2   
+C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:21:48 PAGE 2   
 
   55   2                      result = 1;
   56   2              }
@@ -126,7 +126,7 @@ line level    source
  114   1              IapProgramByte(IAP_ADDRESS+9, (BYTE)motorReducGearRatio);
  115   1              IapProgramByte(IAP_ADDRESS+10, (BYTE)(ballScrew>>8));
  116   1              IapProgramByte(IAP_ADDRESS+11, (BYTE)ballScrew);
-C51 COMPILER V7.50   PARAMETER                                                             08/19/2014 22:14:21 PAGE 3   
+C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:21:48 PAGE 3   
 
  117   1              IapProgramByte(IAP_ADDRESS+12, (BYTE)(motorRotationAngle>>8));
  118   1              IapProgramByte(IAP_ADDRESS+13, (BYTE)motorRotationAngle);

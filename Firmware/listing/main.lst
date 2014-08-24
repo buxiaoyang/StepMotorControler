@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:21:46 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   52   2              }
   53   1              //初始位置传感器2
   54   1              if(sensorStartPosi2 == 0)
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 2   
+C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:21:46 PAGE 2   
 
   55   1              {
   56   2                      if(isStartPosition2 == 0)
@@ -98,91 +98,100 @@ line level    source
   86          void main()
   87          {
   88   1              uint count10ms = 0;
-  89   1              delay_ms(500);
-  90   1              parameter_init();
-  91   1              uart_init();
-  92   1              timer_init();
-  93   1              while(1)
-  94   1              {
-  95   2                      delay_us(100);
-  96   2                      //按键扫描
-  97   2                      count10ms++;
-  98   2                      if(count10ms > 29)
-  99   2                      {
- 100   3                              Key_Scan();
- 101   3                              count10ms = 0;
- 102   3                      }
- 103   2                      //General the PWM
- 104   2                      if(pulseSettingNumCount > 20)
- 105   2                      {
- 106   3                              timer_count --;
- 107   3                      }
- 108   2                      else
- 109   2                      {
- 110   3                              timer_count ++;
- 111   3                      }
- 112   2                      if(timer_count < 1)
- 113   2                      {
- 114   3                              timer_count = 1;        
- 115   3                      }
- 116   2                      else if(timer_count > 50)
-C51 COMPILER V7.50   MAIN                                                                  08/19/2014 22:14:20 PAGE 3   
+  89   1              unsigned long temp = 0;
+  90   1              delay_ms(500);
+  91   1              parameter_init();
+  92   1              uart_init();
+  93   1              timer_init();
+  94   1              while(1)
+  95   1              {
+  96   2                      delay_us(100);
+  97   2                      //按键扫描
+  98   2                      count10ms++;
+  99   2                      if(count10ms > 29)
+ 100   2                      {
+ 101   3                              Key_Scan();
+ 102   3                              count10ms = 0;
+ 103   3                      }
+ 104   2                      //General the PWM
+ 105   2                      if(pulseSettingNumCount > 20)
+ 106   2                      {
+ 107   3                              timer_count --;
+ 108   3                      }
+ 109   2                      else
+ 110   2                      {
+ 111   3                              timer_count ++;
+ 112   3                      }
+ 113   2                      if(timer_count < 1)
+ 114   2                      {
+ 115   3                              timer_count = 1;        
+ 116   3                      }
+C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:21:46 PAGE 3   
 
- 117   2                      {
- 118   3                              timer_count = 50;
- 119   3                      }
- 120   2                      //Get the sensor status
- 121   2                      getSensorStatus();
- 122   2                      if(isStartPosition2 || isStartPosition1)
- 123   2                      {
- 124   3                              isStartPosition = 1;
- 125   3                      }
- 126   2                      else if(!isStartPosition2 && !isStartPosition1)
- 127   2                      {
- 128   3                              isStartPosition = 0;
- 129   3                      }
- 130   2                      //初始化过程中判断原点
- 131   2                      if(initFlag == 1 && isStartPosition == 1)
- 132   2                      {
- 133   3                              pulseSettingNumCount = 4;
- 134   3                              currentPosition = 1;
- 135   3                              initFlag = 0;
- 136   3                      }
- 137   2                      //Save setting to eeprom
- 138   2                      if(saveSetting)
- 139   2                      {
- 140   3                              //计算电机旋转角
- 141   3                              //计算丝杆导程
- 142   3                              //保存设置
- 143   3                              ChangeScreenPage(0x04);
- 144   3                              parameter_save();
- 145   3                              ChangeScreenPage(0x02);
- 146   3                              saveSetting = 0;
- 147   3                      }
- 148   2                      //刷新显示      
- 149   2                      if(refreshDisplay)
- 150   2                      {
- 151   3                              parameter_send_screen();
- 152   3                              refreshDisplay = 0;
- 153   3                      }
- 154   2              }   
- 155   1      }
- 156          
- 157          
- 158          
- 159          
- 160          
- 161          
- 162          
+ 117   2                      else if(timer_count > 50)
+ 118   2                      {
+ 119   3                              timer_count = 50;
+ 120   3                      }
+ 121   2                      //Get the sensor status
+ 122   2                      getSensorStatus();
+ 123   2                      if(isStartPosition2 || isStartPosition1)
+ 124   2                      {
+ 125   3                              isStartPosition = 1;
+ 126   3                      }
+ 127   2                      else if(!isStartPosition2 && !isStartPosition1)
+ 128   2                      {
+ 129   3                              isStartPosition = 0;
+ 130   3                      }
+ 131   2                      //初始化过程中判断原点
+ 132   2                      if(initFlag == 1 && isStartPosition == 1)
+ 133   2                      {
+ 134   3                              pulseSettingNumCount = 4;
+ 135   3                              currentPosition = 1;
+ 136   3                              initFlag = 0;
+ 137   3                      }
+ 138   2                      //Save setting to eeprom
+ 139   2                      if(saveSetting)
+ 140   2                      {
+ 141   3                              //计算电机旋转角
+ 142   3                              temp = (unsigned long)pulseSettingNum*motorStepAngle;
+ 143   3                              motorRotationAngle = temp/100;
+ 144   3                              //计算丝杆导程
+ 145   3                              temp = (unsigned long)pulseSettingNum*motorStepAngle;
+ 146   3                              temp =  (unsigned long)temp * screwPitch;
+ 147   3                              ballScrew = temp/360000;
+ 148   3                              //保存设置
+ 149   3                              ChangeScreenPage(0x04);
+ 150   3                              parameter_save();
+ 151   3                              ChangeScreenPage(0x02);
+ 152   3                              saveSetting = 0;
+ 153   3                              refreshDisplay = 1;
+ 154   3                      }
+ 155   2                      //刷新显示      
+ 156   2                      if(refreshDisplay)
+ 157   2                      {
+ 158   3                              parameter_send_screen();
+ 159   3                              refreshDisplay = 0;
+ 160   3                      }
+ 161   2              }   
+ 162   1      }
  163          
+ 164          
+ 165          
+ 166          
+ 167          
+ 168          
+ 169          
+ 170          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    498    ----
+   CODE SIZE        =    678    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----       2
+   XDATA SIZE       =   ----       6
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
+C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:21:46 PAGE 4   
+
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----
 END OF MODULE INFORMATION.
