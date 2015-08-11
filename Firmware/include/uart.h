@@ -1,20 +1,18 @@
-
-
 #ifndef __UART_H__
 #define __UART_H__
 
-typedef unsigned char BYTE;
-typedef unsigned int WORD;
-typedef unsigned long LONG;
+#include "basefunc.h"
 
-extern bit uartReceiveOK;
-extern BYTE saveSetting;
-extern BYTE uartBuffer[15];
 void uart_init();
 void SendData(BYTE dat);
-void SendDataToScreen(WORD address, WORD dat);
 void SendString(char *s);
+void SendBuffer(char *buf, int len);
+void SendKeyValue(char *name, int value);
 void anyData();
-void ChangeScreenPage(WORD page);
+
+// 串口1用于调试
+char Uart1Init(char smod, char brtx12, unsigned char reload);
+void Uart1Send(char i);
+void Uart1Sends(char* at);
 
 #endif

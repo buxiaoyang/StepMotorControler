@@ -12,16 +12,35 @@
 
 #ifndef __BASEFUNC_H__
 #define __BASEFUNC_H__
+#include "stc12c5a.h"
 
-#define uchar unsigned char
-#define uint  unsigned int
+/*
+typedef unsigned char	BOOLEAN;
+typedef unsigned char	INT8U;   
+typedef signed   char	INT8S;                   
+typedef unsigned int 	INT16U;                   
+typedef signed   int 	INT16S;                   
+typedef unsigned long   INT32U;                   
+typedef signed   long   INT32S;                  
+typedef float          	FP32;                    
+typedef double         	FP64;  
+*/
+
+typedef unsigned char BYTE;
+typedef unsigned int  WORD;
+typedef unsigned long LONG;
+typedef unsigned char BOOL;
+typedef void          VOID;
+
+#define TRUE		  1
+#define FALSE		  0
 
 void _nop_ (void);
 
 /***************************************************************************/
 // º¯Êý¶¨Òå
 /***************************************************************************/
-void delay_us(uint us_value);
-void delay_ms(uint ms_value);
+void delay_us(WORD us_value);
+void delay_ms(WORD ms_value);
 
 #endif

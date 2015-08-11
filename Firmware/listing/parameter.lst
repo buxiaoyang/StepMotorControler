@@ -1,147 +1,1140 @@
-C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:57:12 PAGE 1   
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE PARAMETER
 OBJECT MODULE PLACED IN .\output\parameter.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\parameter.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\parameter.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT
                     -(.\listing\parameter.lst) OBJECT(.\output\parameter.obj)
 
 line level    source
 
-   1          /***************************************************************************/
-   2          // ³ÌÐò£ºÇåÏ´Éè±¸¿ØÖÆÆ÷
-   3          // Ä£¿é£º²ÎÊý
-   4          // ÎÄ¼þ£ºparameter.c
-   5          // ×÷Õß£º²·Ïþ•D
-   6          // °æ±¾£ºV0.02
-   7          // ÈÕÆÚ£º2013Äê11ÔÂ8ÈÕ
-   8          // ¹¦ÄÜ£º²ÎÊý
-   9          // Ð¾Æ¬£ºSTC12C5A60S2
-  10          // ±àÒë£ºKeil uVision3 V3.90
-  11          /***************************************************************************/
+   1          #include "parameter.h"
+   2          #include "screen.h"
+   3          #include "eeprom.h"
+   4          #include "timer.h"
+   5          #include "uart.h"
+   6          #include "debug.h"
+   7          
+   8          //#define REVERSE_DIRECTION
+   9          
+  10          // µÚ¶þµç»úÔËÐÐÊÇ·ñÐèÒªÓÉÓÃ»§¿ØÖÆ
+  11          //#define USER_CONTROL 
   12          
-  13          #include <parameter.h>
-  14          #include <eeprom.h>
-  15          #include <basefunc.h>
-  16          
-  17          /***************************************************************************/
-  18          // ²ÎÊý¶¨Òå     
-  19          /***************************************************************************/
-  20          unsigned char currentPosition; //µ±Ç°Î»ÖÃ 1~20
-  21          unsigned int pulseSettingNum; //Âö³å¸öÊý
-  22          unsigned int pulseSettingFreq; //Âö³åÆµÂÊ
-  23          unsigned int motorStepAngle; //µç»ú²½½ø½Ç
-  24          unsigned int screwPitch; //Ë¿¸ËË¿¾à
-  25          unsigned int motorReducGearRatio; //µç»ú¼õËÙ±È
-  26          unsigned int ballScrew; //Ë¿¸Ëµ¼³Ì
-  27          unsigned int motorRotationAngle; //µç»úÐý×ª½Ç
-  28          unsigned char isStartPosition; //³õÊ¼Î»ÖÃ
-  29          unsigned char isStartPosition1; //³õÊ¼Î»ÖÃ
-  30          unsigned char isStartPosition2; //³õÊ¼Î»ÖÃ
-  31          
-  32          unsigned char refreshDisplay; //Ë¢ÐÂÆÁÄ»±êÖ¾Î» 0 ²»Ë¢ÐÂ 1Ë¢ÐÂ
-  33          
-  34          unsigned char initFlag; //³õÊ¼»¯±êÖ¾Î»
+  13          //TODO:Ê¹ÓÃ½á¹¹Ìå·â×°
+  14          /***************************************************************************/
+  15          // ²ÎÊý¶¨Òå     
+  16          /***************************************************************************/
+  17          unsigned char currentPosition;  //µ±Ç°Î»ÖÃ 1~20
+  18          unsigned int  pulseSettingNum;  //Âö³å¸öÊý
+  19          unsigned int  pulseSettingFreq; //Âö³åÆµÂÊ
+  20          unsigned int  motorStepAngle;   //µç»ú²½½ø½Ç
+  21          unsigned int  screwPitch;       //Ë¿¸ËË¿¾à
+  22          unsigned int  motorReducGearRatio; //µç»ú¼õËÙ±È
+  23          
+  24          unsigned long  ballScrew;          //Ë¿¸Ëµ¼³Ì
+  25          unsigned long  motorRotationAngle; //µç»úÐý×ª½Ç
+  26          unsigned char isStartPosition;     //³õÊ¼Î»ÖÃ
+  27          unsigned char isStartPosition1;    //³õÊ¼Î»ÖÃ
+  28          unsigned char isStartPosition2;    //³õÊ¼Î»ÖÃ
+  29          
+  30          // unused
+  31          unsigned char initFlag = 0; //³õÊ¼»¯±êÖ¾Î»
+  32          
+  33          BOOL refreshDisplay = FALSE; //Ë¢ÐÂÆÁÄ»±êÖ¾Î» 0 ²»Ë¢ÐÂ 1Ë¢ÐÂ
+  34          BOOL saveSetting = FALSE; // ±£´æ²ÎÊý±êÖ¾Î»
   35          
-  36          /***************************************************************************/
-  37          // ¶ÁÈ¡²ÎÊý
-  38          // ²ÎÊý£ºÎÞ
-  39          // ·µ»ØÖµ£º0Ê§°Ü 1³É¹¦  
-  40          /***************************************************************************/
-  41          unsigned char parameter_read()
-  42          {
-  43   1              
-  44   1              unsigned char result = 1;
-  45   1              delay_ms(10); 
-  46   1              if(IapReadByte(IAP_ADDRESS+200) == 0xEE)
-  47   1              {       
-  48   2                      pulseSettingNum = ((IapReadByte(IAP_ADDRESS+0) << 8) | IapReadByte(IAP_ADDRESS+1));
-  49   2                      //pulseSettingFreq = ((IapReadByte(IAP_ADDRESS+2) << 8) | IapReadByte(IAP_ADDRESS+3));
-  50   2                      //motorStepAngle = ((IapReadByte(IAP_ADDRESS+4) << 8) | IapReadByte(IAP_ADDRESS+5));
-  51   2                      screwPitch = ((IapReadByte(IAP_ADDRESS+6) << 8) | IapReadByte(IAP_ADDRESS+7));
-  52   2                      motorReducGearRatio = ((IapReadByte(IAP_ADDRESS+8) << 8) | IapReadByte(IAP_ADDRESS+9));
-  53   2                      ballScrew = ((IapReadByte(IAP_ADDRESS+10) << 8) | IapReadByte(IAP_ADDRESS+11));
-  54   2                      motorRotationAngle = ((IapReadByte(IAP_ADDRESS+12) << 8) | IapReadByte(IAP_ADDRESS+13));
-C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:57:12 PAGE 2   
+  36          static BOOL inputChanged = FALSE;
+  37          static int  motorAction = MOTOR_UNKOWN;
+  38          static unsigned int rotationAngles[ROTATIONANGLE_SIZE] = {0};
+  39          static int rotationAngleNumber = 0;
+  40          static int currentRotationAngleIndex = -1;
+  41          
+  42          // ÓÃÓÚÖ§³ÖÁíÍâÒ»¸öµç»ú
+  43          static BOOL startSecondMotor = FALSE;
+  44          static int currentMotor = MOTORFLAG_UNKOWN;
+  45          
+  46          static unsigned int currentPulseNum = 0;
+  47          
+  48          // ÓÃÓÚ²âÊÔµç»ú
+  49          static BOOL testMode = FALSE;
+  50          static BOOL controlTogether = FALSE;
+  51          static unsigned int testPulseSettingNum = 10000;
+  52          
+  53          static BOOL userControl = FALSE;
+  54          static BOOL waitUserControl = FALSE;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 2   
 
-  55   2                      result = 1;
-  56   2              }
-  57   1              else
-  58   1              {
-  59   2                      pulseSettingNum = 1600;
-  60   2                      screwPitch = 12;
-  61   2                      motorReducGearRatio = 1;
-  62   2                      ballScrew = 12;
-  63   2                      motorRotationAngle = 360;
-  64   2                      result = 0;
-  65   2              }
-  66   1              pulseSettingFreq = 6070;
-  67   1              motorStepAngle = 225;
-  68   1              return result;
-  69   1      }
-  70          
-  71          /***************************************************************************/
-  72          // ²ÎÊý³õÊ¼»¯º¯Êý
-  73          // ²ÎÊý£ºÎÞ
-  74          // ·µ»ØÖµ£ºÎÞ   
-  75          /***************************************************************************/
-  76          void parameter_init()
-  77          {
-  78   1              currentPosition = 1; //µ±Ç°Î»ÖÃ 1~20
-  79   1              if(!parameter_read())
-  80   1              {
-  81   2                      pulseSettingNum = 400; //Âö³å¸öÊý
-  82   2                      pulseSettingFreq = 400; //Âö³åÆµÂÊ
-  83   2                      motorStepAngle = 180; //µç»ú²½½ø½Ç
-  84   2                      screwPitch = 200; //Ë¿¸ËË¿¾à
-  85   2                      motorReducGearRatio = 100; //µç»ú¼õËÙ±È
-  86   2                      ballScrew = 200; //Ë¿¸Ëµ¼³Ì
-  87   2                      motorRotationAngle = 36000; //µç»úÐý×ª½Ç
-  88   2              }
-  89   1              isStartPosition = 0; //³õÊ¼Î»ÖÃ
-  90   1              refreshDisplay = 1;
-  91   1              initFlag = 0;
-  92   1      }
-  93          
-  94          /***************************************************************************/
-  95          // ²ÎÊý±£´æµ½eeprom
-  96          // ²ÎÊý£ºÎÞ
-  97          // ·µ»ØÖµ£º0Ê§°Ü 1³É¹¦  
-  98          /***************************************************************************/
-  99          unsigned char parameter_save()
- 100          {
- 101   1              
- 102   1              unsigned char result = 1;
- 103   1          delay_ms(10);                      //Delay
- 104   1              IapEraseSector(IAP_ADDRESS); //²Á³ýEEPROM
- 105   1              IapProgramByte(IAP_ADDRESS+0, (BYTE)(pulseSettingNum>>8));
- 106   1              IapProgramByte(IAP_ADDRESS+1, (BYTE)pulseSettingNum);
- 107   1              IapProgramByte(IAP_ADDRESS+2, (BYTE)(pulseSettingFreq>>8));
- 108   1              IapProgramByte(IAP_ADDRESS+3, (BYTE)pulseSettingFreq);
- 109   1              IapProgramByte(IAP_ADDRESS+4, (BYTE)(motorStepAngle>>8));
- 110   1              IapProgramByte(IAP_ADDRESS+5, (BYTE)motorStepAngle);
- 111   1              IapProgramByte(IAP_ADDRESS+6, (BYTE)(screwPitch>>8));
- 112   1              IapProgramByte(IAP_ADDRESS+7, (BYTE)screwPitch);
- 113   1              IapProgramByte(IAP_ADDRESS+8, (BYTE)(motorReducGearRatio>>8));
- 114   1              IapProgramByte(IAP_ADDRESS+9, (BYTE)motorReducGearRatio);
- 115   1              IapProgramByte(IAP_ADDRESS+10, (BYTE)(ballScrew>>8));
- 116   1              IapProgramByte(IAP_ADDRESS+11, (BYTE)ballScrew);
-C51 COMPILER V7.50   PARAMETER                                                             08/24/2014 16:57:12 PAGE 3   
+  55          
+  56          //static float result = 0;
+  57          
+  58          void UserControl()
+  59          {
+  60   1              userControlFlag = 0;
+  61   1              userControl = TRUE;
+  62   1      }
+  63          
+  64          static void DebugParameters()
+  65          {
+  66   1              int i;
+  67   1              DebugParameter("pulseSettingNum", pulseSettingNum);
+  68   1              DebugParameter("pulseSettingFreq", pulseSettingFreq);
+  69   1              DebugParameter("motorStepAngle", motorStepAngle);
+  70   1              DebugParameter("motorReducGearRatio", motorReducGearRatio);
+  71   1              DebugParameter("motorRotationAngle", motorRotationAngle);
+  72   1              DebugParameter("screwPitch", screwPitch);
+  73   1              DebugParameter("ballScrew", ballScrew);
+  74   1              DebugParameter("currentPosition", currentPosition);
+  75   1              DebugParameter("isStartPosition", IsInitPosition()); 
+  76   1              for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+  77   1              {
+  78   2                      DebugParameter1(i + 1, rotationAngles[i]);
+  79   2              } 
+  80   1      }
+  81          
+  82          // ¿ØÖÆµ¥Æ¬»úÒý½Å
+  83          void SetMotorForward()
+  84          {
+  85   1              if (currentMotor == MOTORFLAG_TWO)
+  86   1              {
+  87   2                      #ifndef REVERSE_DIRECTION
+  88   2                              secondMotorDirection = 1;
+  89   2                      #else
+                                      secondMotorDirection = 0;
+                              #endif
+  92   2              }
+  93   1              else
+  94   1              {
+  95   2                      #ifndef REVERSE_DIRECTION
+  96   2                              motorDirection = 1;
+  97   2                      #else
+                                      motorDirection = 0;
+                              #endif
+ 100   2              }
+ 101   1      }
+ 102          
+ 103          void SetMotorBackward() 
+ 104          {
+ 105   1              if (currentMotor == MOTORFLAG_TWO)
+ 106   1              {
+ 107   2                      #ifndef REVERSE_DIRECTION
+ 108   2                              secondMotorDirection = 0;
+ 109   2                      #else
+                                      secondMotorDirection = 1;
+                              #endif
+ 112   2              }
+ 113   1              else
+ 114   1              {
+ 115   2                      #ifndef REVERSE_DIRECTION
+ 116   2                              motorDirection = 0;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 3   
 
- 117   1              IapProgramByte(IAP_ADDRESS+12, (BYTE)(motorRotationAngle>>8));
- 118   1              IapProgramByte(IAP_ADDRESS+13, (BYTE)motorRotationAngle);
- 119   1              IapProgramByte(IAP_ADDRESS+200, 0xEE); //Ð´Èë±êÖ¾Î»
- 120   1              refreshDisplay = 0;
- 121   1              return result;
- 122   1      }
- 123          
- 124          
+ 117   2                      #else
+                                      motorDirection = 1;
+                              #endif
+ 120   2              }       
+ 121   1      }
+ 122          
+ 123          void DisablePulse()
+ 124          {
+ 125   1              if (testMode == TRUE && controlTogether == TRUE)
+ 126   1              {
+ 127   2                      secondMotorPWM = 1;
+ 128   2                      motorPWM = 1;
+ 129   2              }
+ 130   1              else
+ 131   1              {
+ 132   2                      if (currentMotor == MOTORFLAG_TWO)
+ 133   2                      {
+ 134   3                              secondMotorPWM = 1;
+ 135   3                      }
+ 136   2                      else
+ 137   2                      {
+ 138   3                              motorPWM = 1;
+ 139   3                      }
+ 140   2              }
+ 141   1      }
+ 142          
+ 143          void ChangePulse()
+ 144          {
+ 145   1              if (testMode == TRUE && controlTogether == TRUE)
+ 146   1              {
+ 147   2                      secondMotorPWM = ~secondMotorPWM;
+ 148   2                      motorPWM = ~motorPWM;
+ 149   2              }
+ 150   1              else
+ 151   1              {
+ 152   2                      if (currentMotor == MOTORFLAG_TWO)
+ 153   2                      {
+ 154   3                              secondMotorPWM = ~secondMotorPWM;
+ 155   3                      }
+ 156   2                      else
+ 157   2                      {
+ 158   3                              motorPWM = ~motorPWM;
+ 159   3                      }
+ 160   2              }
+ 161   1      }
+ 162          
+ 163          void UpdateParameters()
+ 164          {
+ 165   1              unsigned long temp1 = 0;
+ 166   1              unsigned long temp2 = 0;
+ 167   1              
+ 168   1              switch (motorAction)
+ 169   1              {
+ 170   2              case MOTORDIRECTION_FORWARD:
+ 171   2                      currentPosition++;
+ 172   2                      // TODO:ÉèÖÃ²ÎÊýºó¿ÉÒÔ¼ÆËã²¢±£´æÏÂÀ´
+ 173   2                      //¼ÆËãµç»úÐý×ª½Ç:Âö³å¸öÊý*µç»ú²½½ø½Ç(pulseSettingNum * 1.8*100)
+ 174   2                      temp1 = (unsigned long)currentPulseNum * 180;// ´¥ÃþÆÁÍ¨¹ý´®¿Ú¶¼ÊÇÒÔÕûÊýÀ´·¢ËÍ£
+ 175   2                      // ÎªÊ²Ã´Ê¹ÓÃpulseSettingNum²»ÐÐ?
+ 176   2                      temp2 = (unsigned long)temp1 * screwPitch / 36000;
+ 177   2                      motorRotationAngle  = temp1;
+ 178   2                      ballScrew = temp2;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 4   
+
+ 179   2                      break;
+ 180   2              case MOTORDIRECTION_BACKWARD:
+ 181   2                      currentPosition--;
+ 182   2                      // TODO:ÉèÖÃ²ÎÊýºó¿ÉÒÔ¼ÆËã²¢±£´æÏÂÀ´
+ 183   2                      //¼ÆËãµç»úÐý×ª½Ç:Âö³å¸öÊý*µç»ú²½½ø½Ç(pulseSettingNum * 1.8*100)
+ 184   2                      temp1 = (unsigned long)currentPulseNum * 180;// ´¥ÃþÆÁÍ¨¹ý´®¿Ú¶¼ÊÇÒÔÕûÊýÀ´·¢ËÍ£
+ 185   2                      // ÎªÊ²Ã´Ê¹ÓÃpulseSettingNum²»ÐÐ?
+ 186   2                      temp2 = (unsigned long)temp1 * screwPitch / 36000;
+ 187   2                      motorRotationAngle = temp1;
+ 188   2                      ballScrew = temp2;
+ 189   2                      break;
+ 190   2              }       
+ 191   1      }
+ 192          
+ 193          void StartSecondMotor()
+ 194          {
+ 195   1              if (/*startSecondMotor &&*/ userControl)
+ 196   1              {
+ 197   2                      //startSecondMotor = FALSE;
+ 198   2                      userControl = FALSE;
+ 199   2                      waitUserControl = FALSE;
+ 200   2                      
+ 201   2                      DebugParameter("StartSecondMotor motorAction", motorAction);
+ 202   2                      // µÈ´ýµç»úÍ£Ö¹
+ 203   2                      //delay_ms(1000);
+ 204   2                      if (motorAction == MOTORDIRECTION_FORWARD)
+ 205   2                      {
+ 206   3                              SetMotorForward();
+ 207   3                              SetTimerParameter(50, pulseSettingNum);
+ 208   3                      }
+ 209   2                      else if (motorAction == MOTORDIRECTION_BACKWARD)
+ 210   2                      {
+ 211   3                              SetMotorBackward();
+ 212   3                              SetTimerParameter(50, pulseSettingNum);
+ 213   3                      }
+ 214   2                      /*
+ 215   2                      else if (motorAction == MOTOR_INIT)
+ 216   2                      {
+ 217   2                              SetMotorBackward();
+ 218   2                              SetTimerParameter(50, 65535);   
+ 219   2                      }
+ 220   2                      */
+ 221   2              }
+ 222   1      }
+ 223          
+ 224          // ÓÉTimerÄ£¿éµ÷ÓÃ
+ 225          void FinishPulse()
+ 226          {
+ 227   1              // µÈ´ýÓÃ»§ÊäÈë£¬µÚ¶þ¸öµç»ú²ÅÄÜÔËÐÐ
+ 228   1              if (waitUserControl)
+ 229   1              {
+ 230   2                      return;
+ 231   2              }
+ 232   1              
+ 233   1              switch (motorAction)
+ 234   1              {
+ 235   2                      case MOTOR_UNKOWN:
+ 236   2                              return;
+ 237   2                      case MOTOR_INIT:
+ 238   2                              if (currentMotor == MOTORFLAG_ONE)
+ 239   2                              {
+ 240   3                                      Debug("FinishPulse MOTORFLAG_ONE\r\n");
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 5   
+
+ 241   3                                      currentMotor = MOTORFLAG_TWO;   
+ 242   3                                      motorAction = MOTOR_INIT;
+ 243   3                                      #ifndef REVERSE_DIRECTION
+ 244   3                                              secondMotorDirection = 0; // µÚ¶þ¸öµç»úºóÍË
+ 245   3                                      #else
+                                                      secondMotorDirection = 1;
+                                              #endif
+ 248   3                                      SetTimerParameter(50, 65535);           
+ 249   3                              }
+ 250   2                              else if (currentMotor == MOTORFLAG_TWO)
+ 251   2                              {
+ 252   3                                      Debug("FinishPulse MOTORFLAG_TWO\r\n");
+ 253   3                                      // ¸üÐÂÏÔÊ¾ÆÁ
+ 254   3                                      currentPosition = 1;
+ 255   3                                      startSecondMotor = FALSE;
+ 256   3                                      currentMotor = MOTORFLAG_UNKOWN;
+ 257   3                                      motorAction = MOTOR_UNKOWN;
+ 258   3                                      // ²»ÄÜÁ¢¼´Ë¢ÐÂ£¬·ñÔò»á×èÈû
+ 259   3                                      EnableRefreshDisplay();
+ 260   3                                      EnableSaveSetting();
+ 261   3                              }
+ 262   2                              break;
+ 263   2                      case MOTORDIRECTION_FORWARD:
+ 264   2                      case MOTORDIRECTION_BACKWARD:
+ 265   2                              if (currentMotor == MOTORFLAG_ONE)
+ 266   2                              {
+ 267   3                                      // µÚ¶þ¸öµç»úÇ°½øµÄÍ¬Ê±µÚÒ»¸öµç»úºóÍË
+ 268   3                                      if (testMode == TRUE)
+ 269   3                                      {       
+ 270   4                                              #ifndef REVERSE_DIRECTION
+ 271   4                                                      motorDirection = 0;
+ 272   4                                                      secondMotorDirection = 1;
+ 273   4                                              #else
+                                                              motorDirection = 1;
+                                                              secondMotorDirection = 0;
+                                                      #endif
+ 277   4                                              currentMotor = MOTORFLAG_TWO;
+ 278   4                                              motorAction = MOTORDIRECTION_FORWARD;
+ 279   4                                              controlTogether = TRUE;
+ 280   4                                              SetTimerParameter(50, testPulseSettingNum);
+ 281   4                                              return;
+ 282   4                                      }
+ 283   3                                      waitUserControl = TRUE;
+ 284   3                                      startSecondMotor = TRUE;
+ 285   3                                      currentMotor = MOTORFLAG_TWO;
+ 286   3                              }
+ 287   2                              else if (currentMotor == MOTORFLAG_TWO)
+ 288   2                              {
+ 289   3                                      //UpdateParameters();
+ 290   3                                      if (testMode == TRUE)
+ 291   3                                      {
+ 292   4                                              if (motorAction == MOTORDIRECTION_FORWARD)
+ 293   4                                              {
+ 294   5                                                      #ifndef REVERSE_DIRECTION
+ 295   5                                                              secondMotorDirection = 0;
+ 296   5                                                      #else
+                                                                      secondMotorDirection = 1;
+                                                              #endif
+ 299   5                                                      
+ 300   5                                                      controlTogether = FALSE;
+ 301   5                                                      currentMotor = MOTORFLAG_TWO;
+ 302   5                                                      motorAction = MOTORDIRECTION_BACKWARD;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 6   
+
+ 303   5                                                      // ¿ØÖÆ²âÊÔÖ¸Ê¾µÆÁÁ
+ 304   5                                                      secondMotorFlag = 0;
+ 305   5                                                      SetTimerParameter(50, testPulseSettingNum);
+ 306   5                                              }
+ 307   4                                              else if (motorAction == MOTORDIRECTION_BACKWARD)
+ 308   4                                              {
+ 309   5                                                      testMode = FALSE;
+ 310   5                                                      isStartPosition1 = 1;
+ 311   5                                                      isStartPosition2 = 1;
+ 312   5                                                      currentMotor = MOTORFLAG_UNKOWN;
+ 313   5                                                      motorAction = MOTOR_UNKOWN;
+ 314   5                                                      // ¿ØÖÆ²âÊÔÖ¸Ê¾µÆÃð
+ 315   5                                                      secondMotorFlag = 1;
+ 316   5                                                      // ²»ÄÜÁ¢¼´Ë¢ÐÂ£¬·ñÔò»á×èÈû
+ 317   5                                                      EnableRefreshDisplay();
+ 318   5                                                      EnableSaveSetting();
+ 319   5                                              }
+ 320   4                                              return;
+ 321   4                                      }
+ 322   3                                      
+ 323   3                                      if (motorAction == MOTORDIRECTION_FORWARD)
+ 324   3                                              currentPosition++;
+ 325   3                                      else if (motorAction == MOTORDIRECTION_BACKWARD)
+ 326   3                                              currentPosition--;
+ 327   3                                      startSecondMotor = FALSE;
+ 328   3                                      currentMotor = MOTORFLAG_UNKOWN;
+ 329   3                                      motorAction = MOTOR_UNKOWN;
+ 330   3                                      // ²»ÄÜÁ¢¼´Ë¢ÐÂ£¬·ñÔò»á×èÈû
+ 331   3                                      EnableRefreshDisplay();
+ 332   3                                      EnableSaveSetting();
+ 333   3                              }
+ 334   2                              break;
+ 335   2                      default:
+ 336   2                              return;
+ 337   2              }       
+ 338   1      }
+ 339          
+ 340          //====================================
+ 341          void InitHardware()
+ 342          {
+ 343   1              uart_init();
+ 344   1              timer_init();
+ 345   1              InitDebug();
+ 346   1      }
+ 347          
+ 348          void EnableRefreshDisplay()
+ 349          {
+ 350   1              refreshDisplay = TRUE;
+ 351   1      }
+ 352          
+ 353          void EnableSaveSetting()
+ 354          {
+ 355   1              saveSetting = TRUE;
+ 356   1      }
+ 357          
+ 358          void DisableRefreshDisplay()
+ 359          {
+ 360   1              refreshDisplay = FALSE;
+ 361   1      }
+ 362          
+ 363          void DisableSaveSetting()
+ 364          {
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 7   
+
+ 365   1              saveSetting = FALSE;
+ 366   1      }
+ 367          
+ 368          BOOL IsRefreshDisplay()
+ 369          {
+ 370   1              return refreshDisplay;
+ 371   1      }
+ 372          
+ 373          BOOL IsSaveSetting()
+ 374          {
+ 375   1              return saveSetting;
+ 376   1      }
+ 377          
+ 378          BOOL IsInitPosition()
+ 379          {
+ 380   1              if (currentPosition == MOTORPOSITION_BEGIN)
+ 381   1              {
+ 382   2                      return TRUE;
+ 383   2              }
+ 384   1              else
+ 385   1              {
+ 386   2                      return FALSE;
+ 387   2              }
+ 388   1      }
+ 389          
+ 390          // ½âÎö´®¿Ú·¢ËÍ¹ýÀ´µÄÃüÁî£¬È¥³ýÖ¡Í·ºÍÊý¾Ý³¤¶È£¬Ö»°üº¬Ö¸ÁîºÍÊý¾ÝÁ½²¿·Ö
+ 391          // [5A A5 06] 83 00 00 01 01 F4 
+ 392          void ParseCommand(unsigned char* buf, int len)
+ 393          {
+ 394   1              int addr = 0;
+ 395   1              int size = 0;
+ 396   1              int dat = 0;
+ 397   1              // TODO: ²ÎÊý¼ì²é
+ 398   1              len = len;
+ 399   1              // ±äÁ¿µØÖ·£¬Õ¼ÓÃÁ½¸ö×Ö½Ú
+ 400   1              addr = ((buf[1] << 8) | buf[2]);
+ 401   1              // ±äÁ¿µÄ³¤¶È£¬Õ¼ÓÃ1¸ö×Ö½Ú
+ 402   1              size = buf[3];
+ 403   1              if (size != 0x01) return;
+ 404   1              // ±äÁ¿µÄÖµ£¬Õ¼ÓÃsize¸ö×Ö
+ 405   1              dat = ((buf[4] << 8) | buf[5]);
+ 406   1      
+ 407   1              // ²ÎÊýÉèÖÃÒ³ÃæÖÐÊäÈë¿ò
+ 408   1              if (addr == 0x0000 || addr == 0x0002 || addr == 0x0004 || addr == 0x0006 || 
+ 409   1              addr == 0x0008 || addr == 0x000A || addr == 0x000C) 
+ 410   1              {
+ 411   2                      DebugFunction("SetParameter", addr, dat);
+ 412   2                      SetParameter(addr, dat);
+ 413   2              }
+ 414   1              // Ðý×ª½ÇÉèÖÃÒ³ÃæÖÐÊäÈë¿ò
+ 415   1              else if (addr >= SCREEN_ROTATIONANGLE_BEGIN && addr <= SCREEN_ROTATIONANGLE_END)
+ 416   1              {
+ 417   2                      DebugFunction("SetRotationAngle", addr, dat);
+ 418   2                      SetRotationAngle(addr, dat);
+ 419   2              }
+ 420   1              // ·µ»Ø°´Å¥
+ 421   1              else if (addr == 0x000E || addr == 0x001E || addr == 0x002E)
+ 422   1              {
+ 423   2                      DebugFunction("HandleReturn", addr, dat);
+ 424   2                      HandleReturn(addr, dat);
+ 425   2              }
+ 426   1              // µç»ú¿ØÖÆ°´Å¥
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 8   
+
+ 427   1              else if (addr == 0x0014 || addr == 0x0016 || addr == 0x0018)
+ 428   1              {
+ 429   2                      DebugFunction("HandleMotor", addr, dat);
+ 430   2                      HandleMotor(addr, dat);
+ 431   2              }
+ 432   1              // ÆäËû°´Å¥
+ 433   1              else if (addr == 0x00F0 || addr == 0x00F2 || addr == 0x00F4 || addr == 0x00F6) 
+ 434   1              {
+ 435   2                      DebugFunction("HandleButtuon", addr, dat);
+ 436   2                      HandleButtuon(addr, dat);
+ 437   2              }
+ 438   1              else
+ 439   1              {
+ 440   2                      DebugFunction("error", addr, dat);
+ 441   2              }
+ 442   1      }
+ 443          
+ 444          void HandleButtuon(int addr, int dat)
+ 445          {
+ 446   1              dat = dat;
+ 447   1              // ²ÎÊýÉèÖÃ°´Å¥
+ 448   1              if (addr == 0x00F0) 
+ 449   1              {
+ 450   2                      ChangeScreenPage(0x02);
+ 451   2              }
+ 452   1              // ²ÎÊýÉèÖÃ½çÃæÖÐ¸ü¶à°´Å¥
+ 453   1              else if (addr == 0x00F2) 
+ 454   1              { 
+ 455   2                      ChangeScreenPage(0x07);
+ 456   2              }
+ 457   1              // Ðý×ª½ÇÉèÖÃ½çÃæÖÐÏÂÒ»Ò³°´Å¥
+ 458   1              else if (addr == 0x00F4) 
+ 459   1              { 
+ 460   2                      ChangeScreenPage(0x08);
+ 461   2              }
+ 462   1              // Ðý×ª½ÇÉèÖÃ½çÃæÖÐÉÏÒ»Ò³°´Å¥
+ 463   1              else if (addr == 0x00F6) 
+ 464   1              { 
+ 465   2                      ChangeScreenPage(0x07);
+ 466   2              }
+ 467   1              EnableRefreshDisplay();
+ 468   1      }
+ 469          
+ 470          void HandleReturn(int addr, int dat)
+ 471          {
+ 472   1              int page = 0;
+ 473   1              dat = dat;
+ 474   1              // ÇÐ»»ÆÁÄ»
+ 475   1              if (addr == 0x000E)
+ 476   1              {
+ 477   2                      page = 0x00;
+ 478   2              }
+ 479   1              else if (addr == 0x001E || addr == 0x002E)
+ 480   1              { 
+ 481   2                      page = 0x02;
+ 482   2                      SyncRotationAngleNumber();
+ 483   2              } 
+ 484   1              
+ 485   1              if (inputChanged)
+ 486   1              {
+ 487   2                      inputChanged = FALSE;
+ 488   2                      ChangeScreenPage(0x04);
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 9   
+
+ 489   2                      // ÎªÁËÏÔÊ¾±£´æ½çÃæ£¬ÕâÀïÑÓÊ±1s
+ 490   2                      delay_ms(1000);
+ 491   2                      SaveParametersToEEPROM();
+ 492   2              }
+ 493   1              ChangeScreenPage(page);
+ 494   1              EnableRefreshDisplay();// added 
+ 495   1      }
+ 496          
+ 497          void HandleMotor(int addr, int dat)
+ 498          {
+ 499   1              if (addr == 0x0014) //³õÊ¼»¯°´Å¥
+ 500   1              {
+ 501   2                      DebugFunction("InitMotor", addr, dat);
+ 502   2                      InitMotor();
+ 503   2              }
+ 504   1              else if (addr == 0x0016) //ºóÍË°´Å¥
+ 505   1              {
+ 506   2                      DebugFunction("ControlMotor:backward", addr, dat);
+ 507   2                      ControlMotor(MOTORDIRECTION_BACKWARD);
+ 508   2              }
+ 509   1              else if (addr == 0x0018) //Ç°½ø°´Å¥
+ 510   1              {
+ 511   2                      DebugFunction("ControlMotor:forward", addr, dat);
+ 512   2                      ControlMotor(MOTORDIRECTION_FORWARD);
+ 513   2              }
+ 514   1              else
+ 515   1              {
+ 516   2                      dat = dat;
+ 517   2              }
+ 518   1      }
+ 519          
+ 520          void InitMotor()
+ 521          {
+ 522   1              // Èç¹ûµç»úÕýÔÚÔËÐÐ£¬²»ÏìÓ¦ÓÃ»§²Ù×÷£¬Ò²²»¼ÇÂ¼ÓÃ»§²Ù×÷
+ 523   1              if (motorAction != MOTOR_UNKOWN || startSecondMotor)
+ 524   1              {
+ 525   2                      Debug("motor running\r\n");
+ 526   2                      DebugParameter("motorAction", motorAction);
+ 527   2                      return;
+ 528   2              }
+ 529   1              // Èç¹ûµ±Ç°Î»ÖÃÎª1£¬Ôòµç»ú²»ÐèÒªÔË×ª
+ 530   1              if (currentPosition == MOTORPOSITION_BEGIN)
+ 531   1              {
+ 532   2                      Debug("motor at begin\r\n");
+ 533   2                      return;
+ 534   2              }
+ 535   1      
+ 536   1              Debug("InitMotor\r\n");
+ 537   1              motorAction = MOTOR_INIT;
+ 538   1              currentMotor = MOTORFLAG_ONE;
+ 539   1              SetMotorBackward();
+ 540   1              SetTimerParameter(50, 65535);   
+ 541   1      }
+ 542          
+ 543          // TODO:µ±Ç°Î»ÖÃ·¶Î§Îª1-20£¬ÎÞ·¨¼ÌÐøÇ°½ø»òºóÍËÊ±Í¨¹ý½çÃæ¸ø³öÌáÊ¾
+ 544          void ControlMotor(int direction)
+ 545          {
+ 546   1              int position = 0;
+ 547   1              if (motorAction != MOTOR_UNKOWN || startSecondMotor)
+ 548   1              {
+ 549   2                      Debug("motor running\r\n");
+ 550   2                      DebugParameter("motorAction", motorAction);
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 10  
+
+ 551   2                      return;
+ 552   2              }
+ 553   1              DebugParameter("ControlMotor:direction", direction);
+ 554   1      
+ 555   1              userControlFlag = 1;
+ 556   1              userControl = FALSE;
+ 557   1              if (direction == MOTORDIRECTION_FORWARD)
+ 558   1              {
+ 559   2                      position = currentPosition + 1;
+ 560   2                      if (position > MOTORPOSITION_END || position <= MOTORPOSITION_BEGIN)
+ 561   2                      {
+ 562   3                              #if 0
+                                      ChangeScreenPage(0x09);
+                                      // ÎªÁËÏÔÊ¾±£´æ½çÃæ£¬ÕâÀïÑÓÊ±1s
+                                      delay_ms(1000);
+                                      ChangeScreenPage(0x00);
+                                      #endif
+ 568   3                              return;
+ 569   3                      }
+ 570   2                      motorAction = MOTORDIRECTION_FORWARD;
+ 571   2                      currentMotor = MOTORFLAG_ONE;
+ 572   2                      SetMotorForward();
+ 573   2              }
+ 574   1              else if (direction == MOTORDIRECTION_BACKWARD)
+ 575   1              {
+ 576   2                      position = currentPosition - 1;
+ 577   2                      if (position < MOTORPOSITION_BEGIN ||  position >= MOTORPOSITION_END )
+ 578   2                      {
+ 579   3                              #if 0
+                                      ChangeScreenPage(0x0A);
+                                      // ÎªÁËÏÔÊ¾±£´æ½çÃæ£¬ÕâÀïÑÓÊ±1s
+                                      delay_ms(1000);
+                                      ChangeScreenPage(0x00);
+                                      #endif
+ 585   3                              return;
+ 586   3                      }
+ 587   2                      motorAction = MOTORDIRECTION_BACKWARD;
+ 588   2                      currentMotor = MOTORFLAG_ONE;
+ 589   2                      SetMotorBackward();     
+ 590   2              }
+ 591   1              SyncRotationAngle();
+ 592   1              //DebugParameter("========pulseSettingNum", pulseSettingNum);
+ 593   1              SetTimerParameter(50, pulseSettingNum);
+ 594   1      }
+ 595          
+ 596          // ³õÊ¼Î»ÖÃÊ±²Å¿ÉÒÔ½øÐÐ²âÊÔ£¬²âÊÔµÄ²½½ø½Ç¹Ì¶¨
+ 597          void TestMotor()
+ 598          {
+ 599   1              #ifdef VERBOSE
+                              DebugParameter("testMode", testMode);
+                              DebugParameter("controlTogether", controlTogether);
+                              DebugParameter("isStartPosition1", isStartPosition1);
+                              DebugParameter("isStartPosition2", isStartPosition2);
+                              DebugParameter("currentPosition", currentPosition);
+                      #endif
+ 606   1              // isStartPosition1 == 1 && isStartPosition2 == 1?
+ 607   1              if (testMode != TRUE && IsInitPosition())
+ 608   1              {
+ 609   2              #ifdef VERBOSE
+                              Debug("TestMotor...\r\n");      
+                              Debug("TestMotor MOTORFLAG_ONE begin.\r\n");
+                      #endif
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 11  
+
+ 613   2                      testMode = TRUE;
+ 614   2                      currentMotor = MOTORFLAG_ONE;
+ 615   2                      motorAction = MOTORDIRECTION_FORWARD;
+ 616   2      
+ 617   2                      #ifndef REVERSE_DIRECTION
+ 618   2                              motorDirection = 1;
+ 619   2                      #else
+                                      motorDirection = 0;
+                              #endif
+ 622   2                      controlTogether = FALSE;
+ 623   2                      SetTimerParameter(50, testPulseSettingNum);
+ 624   2              }
+ 625   1      }
+ 626          
+ 627          // TODO:¸ÄÐ´¸Ãº¯Êý
+ 628          void GetSensorStatus()
+ 629          {
+ 630   1              //³õÊ¼Î»ÖÃ´«¸ÐÆ÷
+ 631   1              if (sensorStartPosi1 == 0)
+ 632   1              {
+ 633   2                      if(isStartPosition1 == 0)
+ 634   2                      {
+ 635   3                              refreshDisplay = 1;
+ 636   3                      }
+ 637   2                      isStartPosition1 = 1;
+ 638   2              }
+ 639   1              if (sensorStartPosi1 == 1)
+ 640   1              {
+ 641   2                      if(isStartPosition1 == 1)
+ 642   2                      {
+ 643   3                              refreshDisplay = 1;
+ 644   3                      }
+ 645   2                      isStartPosition1 = 0;
+ 646   2              }
+ 647   1              //³õÊ¼Î»ÖÃ´«¸ÐÆ÷2
+ 648   1              if (sensorStartPosi2 == 0)
+ 649   1              {
+ 650   2                      if(isStartPosition2 == 0)
+ 651   2                      {
+ 652   3                              refreshDisplay = 1;
+ 653   3                      }
+ 654   2                      isStartPosition2 = 1;
+ 655   2              }
+ 656   1              if (sensorStartPosi2 == 1)
+ 657   1              {
+ 658   2                      if(isStartPosition2 == 1)
+ 659   2                      {
+ 660   3                              refreshDisplay = 1;
+ 661   3                      }
+ 662   2                      isStartPosition2 = 0;
+ 663   2              }
+ 664   1              //µç´ÅÌúÊäÈë
+ 665   1              if (electromagnetIn == 0)
+ 666   1              {
+ 667   2                      electromagnetOut = 0;
+ 668   2              }
+ 669   1              else
+ 670   1              {
+ 671   2                      electromagnetOut = 1;
+ 672   2              }
+ 673   1      }
+ 674          
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 12  
+
+ 675          void CheckSensorInput()
+ 676          {
+ 677   1      #if 0
+                      //Get the sensor status
+                      GetSensorStatus();
+                      // ----Èç¹ûÁ½¸ö´«¸ÐÆ÷ÓÐÒ»¸öÓÐÐÅºÅ¾ÍËµÃ÷ÊÇ¿ªÊ¼Î»ÖÃ
+                      if (isStartPosition2 || isStartPosition1)
+                      {
+                              isStartPosition = 1;
+                      }
+                      /*
+                      else if (!isStartPosition2 && !isStartPosition1)
+                      {
+                              isStartPosition = 0;
+                      }
+                      */
+                      //³õÊ¼»¯¹ý³ÌÖÐÅÐ¶ÏÔ­µã
+                      if (motorAction == MOTOR_INIT && (isStartPosition2 || isStartPosition1))
+                      {
+                              Debug("CheckSensorInput\r\n");
+                              isStartPosition1 = 0;
+                              isStartPosition2 = 0;
+                              initFlag = 0;
+                              //pulseSettingNumCount = 4;
+                              if (isStartPosition1)
+                              {
+              
+                              }
+                              else if (isStartPosition2)
+                              {
+              
+                              }
+                              //SetTimerParameter(0, 4);
+                              //SetTimerParameter(50, 4);
+                              StopPulseTimer();
+                      }
+              #endif
+ 712   1      
+ 713   1              if (motorAction == MOTOR_INIT)
+ 714   1              {
+ 715   2                      if (currentMotor == MOTORFLAG_ONE)
+ 716   2                      {
+ 717   3                              if (sensorStartPosi1 == 0)
+ 718   3                              {
+ 719   4                                      StopPulseTimer();
+ 720   4                              }
+ 721   3                      }
+ 722   2                      else if (currentMotor == MOTORFLAG_TWO)
+ 723   2                      {
+ 724   3                              if (sensorStartPosi2 == 0)
+ 725   3                              {
+ 726   4                                      StopPulseTimer();
+ 727   4                              }
+ 728   3                      }
+ 729   2              }
+ 730   1      }
+ 731          
+ 732          void ResetParameters()
+ 733          {
+ 734   1              Debug("Reset parameters...\r\n");       
+ 735   1              pulseSettingNum = 0;
+ 736   1              pulseSettingFreq = 0;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 13  
+
+ 737   1              motorStepAngle = 0;
+ 738   1              motorRotationAngle = 0;
+ 739   1              motorReducGearRatio = 0;
+ 740   1              ballScrew = 0;
+ 741   1              screwPitch = 0; 
+ 742   1              currentPosition = 0;
+ 743   1      
+ 744   1              saveSetting = FALSE;
+ 745   1              refreshDisplay = FALSE;
+ 746   1              initFlag = 0;
+ 747   1      }
+ 748          
+ 749          void InitParameters()
+ 750          {
+ 751   1              int i = 0;
+ 752   1              BOOL result = FALSE;
+ 753   1              ResetParameters();
+ 754   1              DebugParameters();      
+ 755   1              result = ReadParametersFromEEPROM();
+ 756   1              if (!result) // Ê¹ÓÃÄ¬ÈÏÖµ
+ 757   1              {
+ 758   2                      Debug("Use default parameters\r\n");
+ 759   2                      pulseSettingNum = 400; //Âö³å¸öÊý
+ 760   2                      pulseSettingFreq = 400; //Âö³åÆµÂÊ
+ 761   2                      motorStepAngle = 180; //µç»ú²½½ø½Ç
+ 762   2                      motorRotationAngle = 36000; //µç»úÐý×ª½Ç
+ 763   2                      motorReducGearRatio = 100; //µç»ú¼õËÙ±È
+ 764   2                      screwPitch = 200; //Ë¿¸ËË¿¾à
+ 765   2                      ballScrew = 200; //Ë¿¸Ëµ¼³Ì     
+ 766   2                      currentPosition = MOTORPOSITION_BEGIN; //µ±Ç°Î»ÖÃ 1~20
+ 767   2      
+ 768   2                      for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+ 769   2                      {
+ 770   3                              rotationAngles[i] = 0x00;//i * 100;
+ 771   3                      }       
+ 772   2                      SaveParametersToEEPROM();
+ 773   2              } 
+ 774   1      
+ 775   1              SyncRotationAngleNumber();
+ 776   1              EnableRefreshDisplay();
+ 777   1              DisplayParameters();
+ 778   1              DebugParameters();
+ 779   1      }
+ 780          
+ 781          static unsigned int GetPulseNumber(unsigned int position)
+ 782          {
+ 783   1              //DebugParameter("currentPosition", currentPosition);
+ 784   1              return rotationAngles[position - 1];
+ 785   1      }
+ 786          
+ 787          static unsigned long GetRotationAngle(unsigned int position)
+ 788          {
+ 789   1              unsigned int currentPulseNumber = 0;
+ 790   1              unsigned long currentRotationAngle = 0;
+ 791   1              unsigned long realMotorStepAngle = 0;
+ 792   1              currentPulseNumber = rotationAngles[position - 1];
+ 793   1              /*
+ 794   1                      ÎªÁË±ÜÃâ¸¡µãÊý¼ÆËã£¬À©´ó1000±¶
+ 795   1                      Êµ¼Ê±í´ïÊ½:(motorStepAngle/1000)/(motorReducGearRatio/100)*1000
+ 796   1                      ¼ò»¯±í´ïÊ½:100*motorStepAngle/motorReducGearRatio
+ 797   1              */ 
+ 798   1              realMotorStepAngle = (unsigned long)100 * motorStepAngle / motorReducGearRatio;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 14  
+
+ 799   1              /*
+ 800   1                      Êµ¼Ê±í´ïÊ½:currentPulseNumber*realMotorStepAngle/1000*100
+ 801   1                      ¼ò»¯±í´ïÊ½:currentPulseNumber*realMotorStepAngle/10
+ 802   1              */
+ 803   1              currentRotationAngle = (unsigned long)currentPulseNumber * realMotorStepAngle / 10;
+ 804   1              return currentRotationAngle;
+ 805   1      }
+ 806          
+ 807          static unsigned long GetBallScrew(unsigned int position)
+ 808          {
+ 809   1              unsigned int i = 0;
+ 810   1              unsigned long currentBallScrew = 0;
+ 811   1              unsigned int totalPulseNumber = 0;
+ 812   1              unsigned int pulseNumber = 0;
+ 813   1              unsigned long realMotorStepAngle = 0;
+ 814   1              if (position == 1)
+ 815   1              {
+ 816   2                      return 0;
+ 817   2              }
+ 818   1              for (i = 1; i < position; i++)
+ 819   1              {
+ 820   2                      pulseNumber = GetPulseNumber(i);
+ 821   2                      totalPulseNumber += pulseNumber;
+ 822   2                      #if 0
+                              DebugParameter("i", i);
+                              DebugParameter("pulseNumber", pulseNumber);
+                              #endif
+ 826   2              }
+ 827   1              /*
+ 828   1                      ÎªÁË±ÜÃâ¸¡µãÊý¼ÆËã£¬À©´ó1000±¶
+ 829   1                      Êµ¼Ê±í´ïÊ½:(motorStepAngle/1000)/(motorReducGearRatio/100)*1000
+ 830   1                      ¼ò»¯±í´ïÊ½:100*motorStepAngle/motorReducGearRatio
+ 831   1              */ 
+ 832   1              realMotorStepAngle = (unsigned long)100 * motorStepAngle / motorReducGearRatio;
+ 833   1              /*
+ 834   1                      Êµ¼Ê±í´ïÊ½:totalPulseNumber*realMotorStepAngle*(screwPitch/100)/360/1000*100
+ 835   1                      ¼ò»¯±í´ïÊ½:totalPulseNumber*realMotorStepAngle*screwPitch/360000
+ 836   1              */
+ 837   1              currentBallScrew = (unsigned long)totalPulseNumber * realMotorStepAngle * screwPitch / 360000;
+ 838   1              return currentBallScrew;
+ 839   1      }
+ 840          
+ 841          void DisplayParameters()
+ 842          {
+ 843   1              int i;
+ 844   1              int addr;
+ 845   1              if (IsRefreshDisplay())
+ 846   1              {
+ 847   2                      DebugParameter("currentPosition", currentPosition);
+ 848   2                      pulseSettingNum = GetPulseNumber(currentPosition);
+ 849   2                      motorRotationAngle = GetRotationAngle(currentPosition);
+ 850   2                      ballScrew = GetBallScrew(currentPosition);
+ 851   2      
+ 852   2                      SendDataToScreen(0x0000, pulseSettingNum);
+ 853   2                      SendDataToScreen(0x0002, pulseSettingFreq);
+ 854   2                      SendDataToScreen(0x0004, motorStepAngle);
+ 855   2                      SendDataToScreen(0x0006, screwPitch);
+ 856   2                      SendDataToScreen(0x0008, motorReducGearRatio);
+ 857   2                      SendLongDataToScreen(0x000A, ballScrew);// ballScrew
+ 858   2                      SendLongDataToScreen(0x000E, motorRotationAngle); // motorRotationAngle
+ 859   2      
+ 860   2                      // modified 0x0010->0x0020 0x0012->0x0022
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 15  
+
+ 861   2                      SendDataToScreen(0x0020, currentPosition);
+ 862   2                      SendDataToScreen(0x0022, IsInitPosition()); 
+ 863   2              
+ 864   2      
+ 865   2                      for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+ 866   2                      {
+ 867   3                              addr = SCREEN_ROTATIONANGLE_BEGIN + i * 2;
+ 868   3                              SendDataToScreen(addr, rotationAngles[i]);
+ 869   3                      }       
+ 870   2                      DisableRefreshDisplay();
+ 871   2              }
+ 872   1      }
+ 873          
+ 874          void SaveParameters()
+ 875          {
+ 876   1              if (IsSaveSetting())
+ 877   1              {
+ 878   2                      SaveParametersToEEPROM();
+ 879   2                      DisableSaveSetting();
+ 880   2              }
+ 881   1      }
+ 882          
+ 883          BOOL ReadParametersFromEEPROM()
+ 884          {
+ 885   1              int i = 0;
+ 886   1              int addr = 0;
+ 887   1              BOOL result = FALSE;
+ 888   1              delay_ms(10); 
+ 889   1              Debug("Read parameters from EEPROM\r\n");
+ 890   1              // Èç¹ûµØÖ·200µÄÄÚÈÝ²»ÊÇ0XEE,¼´Ã»ÓÐÐ´Èë±êÊ¶£¬±íÊ¾µÚÒ»´Î¶ÁÈ¡
+ 891   1              if (IapReadByte(IAP_ADDRESS+200) == 0xEE)
+ 892   1              {       
+ 893   2                      pulseSettingNum = ((IapReadByte(IAP_ADDRESS+0) << 8) | IapReadByte(IAP_ADDRESS+1));
+ 894   2                      pulseSettingFreq = ((IapReadByte(IAP_ADDRESS+2) << 8) | IapReadByte(IAP_ADDRESS+3));
+ 895   2                      motorStepAngle = ((IapReadByte(IAP_ADDRESS+4) << 8) | IapReadByte(IAP_ADDRESS+5));
+ 896   2                      screwPitch = ((IapReadByte(IAP_ADDRESS+6) << 8) | IapReadByte(IAP_ADDRESS+7));
+ 897   2                      motorReducGearRatio = ((IapReadByte(IAP_ADDRESS+8) << 8) | IapReadByte(IAP_ADDRESS+9));
+ 898   2                      
+ 899   2                      ballScrew = ((IapReadByte(IAP_ADDRESS+10) << 24) | (IapReadByte(IAP_ADDRESS+11) << 16) + 
+ 900   2                                               (IapReadByte(IAP_ADDRESS+12) << 8) + IapReadByte(IAP_ADDRESS+13));
+ 901   2                      motorRotationAngle = ((IapReadByte(IAP_ADDRESS+14) << 24) | (IapReadByte(IAP_ADDRESS+15) << 16) + 
+ 902   2                                               (IapReadByte(IAP_ADDRESS+16) << 8) + IapReadByte(IAP_ADDRESS+17));
+ 903   2                      // ¶ÁÈ¡µ±Ç°Î»ÖÃ
+ 904   2                      currentPosition = IapReadByte(IAP_ADDRESS+18);
+ 905   2                      // ¶ÁÈ¡Ðý×ª½Ç
+ 906   2                      addr = IAP_ADDRESS + 20;
+ 907   2                      for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+ 908   2                      {
+ 909   3                              rotationAngles[i] = ((IapReadByte(addr+0) << 8) | IapReadByte(addr+1));
+ 910   3                              addr += 2;
+ 911   3                      }
+ 912   2                      
+ 913   2                      result = TRUE;
+ 914   2              }
+ 915   1              return result;
+ 916   1      }
+ 917          
+ 918          // TODO:Ã¿´ÎÖ»±£´æÐÞ¸ÄµÄÊý¾Ý
+ 919          BOOL SaveParametersToEEPROM()
+ 920          {
+ 921   1              int i = 0;
+ 922   1              int addr = 0;
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 16  
+
+ 923   1              BOOL result = FALSE;
+ 924   1          delay_ms(10); 
+ 925   1              IapEraseSector(IAP_ADDRESS); //²Á³ýEEPROM
+ 926   1              IapProgramByte(IAP_ADDRESS+0, (BYTE)(pulseSettingNum>>8));
+ 927   1              IapProgramByte(IAP_ADDRESS+1, (BYTE)pulseSettingNum);
+ 928   1              IapProgramByte(IAP_ADDRESS+2, (BYTE)(pulseSettingFreq>>8));
+ 929   1              IapProgramByte(IAP_ADDRESS+3, (BYTE)pulseSettingFreq);
+ 930   1              IapProgramByte(IAP_ADDRESS+4, (BYTE)(motorStepAngle>>8));
+ 931   1              IapProgramByte(IAP_ADDRESS+5, (BYTE)motorStepAngle);
+ 932   1              IapProgramByte(IAP_ADDRESS+6, (BYTE)(screwPitch>>8));
+ 933   1              IapProgramByte(IAP_ADDRESS+7, (BYTE)screwPitch);
+ 934   1              IapProgramByte(IAP_ADDRESS+8, (BYTE)(motorReducGearRatio>>8));
+ 935   1              IapProgramByte(IAP_ADDRESS+9, (BYTE)motorReducGearRatio);
+ 936   1              IapProgramByte(IAP_ADDRESS+10, (BYTE)((ballScrew>>24) & 0xFF));
+ 937   1              IapProgramByte(IAP_ADDRESS+11, (BYTE)((ballScrew>>16) & 0xFF));
+ 938   1              IapProgramByte(IAP_ADDRESS+12, (BYTE)((ballScrew>>8)  & 0xFF));
+ 939   1              IapProgramByte(IAP_ADDRESS+13, (BYTE)(ballScrew       & 0xFF));
+ 940   1      
+ 941   1              IapProgramByte(IAP_ADDRESS+14, (BYTE)((motorRotationAngle>>24) & 0xFF));
+ 942   1              IapProgramByte(IAP_ADDRESS+15, (BYTE)((motorRotationAngle>>16) & 0xFF));
+ 943   1              IapProgramByte(IAP_ADDRESS+16, (BYTE)((motorRotationAngle>>8)  & 0xFF));
+ 944   1              IapProgramByte(IAP_ADDRESS+17, (BYTE)(motorRotationAngle       & 0xFF));
+ 945   1                  
+ 946   1              // ÐÂÔö
+ 947   1              IapProgramByte(IAP_ADDRESS+18, (BYTE)currentPosition);
+ 948   1      
+ 949   1              // ±£´æÐý×ª½Ç
+ 950   1              addr = IAP_ADDRESS + 20;
+ 951   1              for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+ 952   1              {
+ 953   2                      IapProgramByte(addr+0, (BYTE)(rotationAngles[i]>>8));
+ 954   2                      IapProgramByte(addr+1, (BYTE)rotationAngles[i]);
+ 955   2                      addr += 2;
+ 956   2              }
+ 957   1      
+ 958   1              IapProgramByte(IAP_ADDRESS+200, 0xEE); //Ð´Èë±êÖ¾Î»
+ 959   1              result = TRUE;
+ 960   1              return result;
+ 961   1      }
+ 962          
+ 963          void SetParameter(int key, int dat)
+ 964          {
+ 965   1              if (key == 0x0000)//Âö³å¸öÊý
+ 966   1              {
+ 967   2                      if (dat != pulseSettingNum)
+ 968   2                      {
+ 969   3                              pulseSettingNum = dat;
+ 970   3                              inputChanged = TRUE;
+ 971   3                      }
+ 972   2              }
+ 973   1              else if (key == 0x0002) //Âö³åÆµÂÊ
+ 974   1              {
+ 975   2                      if (dat != pulseSettingFreq)
+ 976   2                      {
+ 977   3                              pulseSettingFreq = dat;
+ 978   3                              inputChanged = TRUE;
+ 979   3                      }
+ 980   2              }
+ 981   1              else if (key == 0x0004) //µç»ú²½½ø½Ç
+ 982   1              {
+ 983   2                      if (dat != motorStepAngle)
+ 984   2                      {
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 17  
+
+ 985   3                              motorStepAngle = dat;
+ 986   3                              inputChanged = TRUE;
+ 987   3                      }
+ 988   2              }
+ 989   1              else if (key == 0x0006) // Ë¿¸ËË¿¾à
+ 990   1              {
+ 991   2                      if (dat != screwPitch)
+ 992   2                      {
+ 993   3                              screwPitch = dat;
+ 994   3                              inputChanged = TRUE;
+ 995   3                      }
+ 996   2              }
+ 997   1              else if (key == 0x0008) //µç»ú¼õËÙ±È
+ 998   1              {
+ 999   2                      if (dat != motorReducGearRatio)
+1000   2                      {
+1001   3                              motorReducGearRatio = dat;
+1002   3                              inputChanged = TRUE;
+1003   3                      }
+1004   2              }
+1005   1              else if (key == 0x000A) //Ë¿¸Ëµ¼³Ì
+1006   1              {
+1007   2                      if (dat != ballScrew)
+1008   2                      {
+1009   3                              ballScrew = dat;
+1010   3                              inputChanged = TRUE;
+1011   3                      }
+1012   2              }
+1013   1              else if (key == 0x000C) //µç»úÐý×ª½Ç
+1014   1              {
+1015   2                      if (dat != motorRotationAngle)
+1016   2                      {
+1017   3                              motorRotationAngle = dat;
+1018   3                              inputChanged = TRUE;
+1019   3                      }
+1020   2              }
+1021   1      }
+1022          
+1023          void SetRotationAngle(int key, int dat)
+1024          {
+1025   1              int index = (key & 0x00FF) / 2;
+1026   1              DebugParameter("index", index);
+1027   1              if (dat != rotationAngles[index])
+1028   1              {
+1029   2                      rotationAngles[index] = dat;
+1030   2                      inputChanged = TRUE;
+1031   2              }
+1032   1      }
+1033          
+1034          // ²éÕÒÊý×éÖÐ×îºóÒ»¸ö²»Îª0µÄÔªËØ£¬¼ÇÂ¼ÆäÏÂ±ê
+1035          void SyncRotationAngleNumber()
+1036          {
+1037   1              int i = ROTATIONANGLE_SIZE -1;
+1038   1              while ((i >= 0) && (rotationAngles[i] == 0))
+1039   1              {
+1040   2                      i--;
+1041   2              }
+1042   1              rotationAngleNumber = i + 1;
+1043   1              DebugParameter("rotationAngleNumber", rotationAngleNumber);
+1044   1              //DebugParameter("rotationAngle", rotationAngles[rotationAngleNumber - 1]);
+1045   1              // 
+1046   1              testPulseSettingNum = rotationAngles[0];
+C51 COMPILER V7.50   PARAMETER                                                             08/08/2015 15:51:22 PAGE 18  
+
+1047   1      }
+1048          
+1049          // Í¨¹ýÉèÖÃÂö³åÊýÀ´µ÷ÕûÐý×ª½Ç
+1050          void SyncRotationAngle()
+1051          {
+1052   1              unsigned int rotationAngle;
+1053   1              #if 0
+                      unsigned int i;
+                      // ²ßÂÔ1:Ñ­»·Ê¹ÓÃÐý×ª½Ç
+                      if (rotationAngleNumber > 0)
+                      {
+                              for (i = 0; i < rotationAngleNumber; i++)
+                              {
+                                      rotationAngle = rotationAngles[currentRotationAngleIndex];
+                                      currentRotationAngleIndex = (currentRotationAngleIndex + 1) % rotationAngleNumber;
+                                      if (rotationAngle > 0)
+                                      {
+                                              pulseSettingNum = rotationAngle;
+                                              return;
+                                      }
+                              }
+                      }
+                      #else 
+1070   1                      // ²ßÂÔ2:Ã¿¸öÎ»ÖÃ¶ÔÓ¦Ò»¸öÐý×ª½Ç
+1071   1                      // Î»ÖÃ1¶ÔÓ¦Ðý×ª½Ç1£¬...
+1072   1                      if (motorAction == MOTORDIRECTION_FORWARD)
+1073   1                      {
+1074   2                              rotationAngle = rotationAngles[currentPosition - 1];
+1075   2                      }
+1076   1                      else if (motorAction == MOTORDIRECTION_BACKWARD)
+1077   1                      {
+1078   2                              rotationAngle = rotationAngles[currentPosition - 1 - 1];
+1079   2                      }               
+1080   1                      if (rotationAngle == 65535)
+1081   1                              rotationAngle = 0;
+1082   1                      pulseSettingNum = rotationAngle;
+1083   1                      currentPulseNum = rotationAngle;
+1084   1              #endif
+1085   1      }
+1086          
+1087          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    603    ----
+   CODE SIZE        =   4409    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =     20       2
+   XDATA SIZE       =    123      64
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

@@ -1,0 +1,56 @@
+C51 COMPILER V7.50   TEST                                                                  06/13/2015 22:21:27 PAGE 1   
+
+
+C51 COMPILER V7.50, COMPILATION OF MODULE TEST
+OBJECT MODULE PLACED IN .\output\test.obj
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\test.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\li
+                    -sting\test.lst) OBJECT(.\output\test.obj)
+
+line level    source
+
+   1          #include "test.h"
+   2          #include "basefunc.h"
+   3          #include "parameter.h"
+   4          #include "screen.h"
+   5          #include "uart.h"
+   6          
+   7          void Test_EEPROM()
+   8          {
+   9   1              BOOL ret = TRUE;
+  10   1              SendString("Test EEPROM\r\n");
+  11   1              SaveParametersToEEPROM();
+  12   1              SendString("1.Read parameters\r\n");
+  13   1              ret = ReadParametersFromEEPROM();
+  14   1              if (!ret)
+  15   1              {
+  16   2                      SendString("Read parameters error\r\n");
+  17   2                      return;
+  18   2              }
+  19   1              LogParameters();
+  20   1              SendString("2.Change parameters and save Parameters\r\n");
+  21   1              ChangeParameters();
+  22   1              SaveParametersToEEPROM();
+  23   1              SendString("3.Read parameters again\r\n");
+  24   1              ret = ReadParametersFromEEPROM();
+  25   1              if (!ret)
+  26   1              {
+  27   2                      SendString("Read parameters error\r\n");
+  28   2                      return;
+  29   2              }
+  30   1              LogParameters();
+  31   1              SendString("Test EEPROM success\r\n");
+  32   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     97    ----
+   CONSTANT SIZE    =    148    ----
+   XDATA SIZE       =   ----       1
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -13,9 +13,7 @@
 #ifndef __EEPROM_H__
 #define __EEPROM_H__
 
-typedef unsigned char BYTE;
-typedef unsigned int WORD;
-typedef unsigned long LONG;
+#include "basefunc.h"
 
 //Start address for STC11/10xx EEPROM
 #define IAP_ADDRESS 0x0000

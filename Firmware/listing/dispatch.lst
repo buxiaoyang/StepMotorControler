@@ -1,14 +1,14 @@
-C51 COMPILER V7.50   DISPATCH                                                              08/24/2014 16:57:13 PAGE 1   
+C51 COMPILER V7.50   DISPATCH                                                              08/08/2015 15:51:30 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE DISPATCH
 OBJECT MODULE PLACED IN .\output\dispatch.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\dispatch.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\dispatch.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(
                     -.\listing\dispatch.lst) OBJECT(.\output\dispatch.obj)
 
 line level    source
 
-   1          #include <reg52.h>
+   1          //#include <reg52.h>
    2          #include <parameter.h>
    3          #include <intrins.h>
    4          #include <dispatch.h>

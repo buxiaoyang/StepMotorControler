@@ -6,7 +6,9 @@
 ".\output\uart.obj",
 ".\output\key.obj",
 ".\output\dispatch.obj",
-".\output\timer.obj" 
+".\output\timer.obj",
+".\output\screen.obj",
+".\output\debug.obj" 
 TO ".\output\PlateCuttingController" 
 PRINT(".\listing\PlateCuttingController.m51") RAMSIZE(256) 
 XDATA( 0X0000-0X03FE )

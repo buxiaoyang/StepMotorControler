@@ -1,9 +1,9 @@
-C51 COMPILER V7.50   BASEFUNC                                                              08/24/2014 16:57:11 PAGE 1   
+C51 COMPILER V7.50   BASEFUNC                                                              08/08/2015 15:51:19 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE BASEFUNC
 OBJECT MODULE PLACED IN .\output\basefunc.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\basefunc.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\basefunc.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(
                     -.\listing\basefunc.lst) OBJECT(.\output\basefunc.obj)
 
 line level    source
@@ -27,10 +27,10 @@ line level    source
   17          // 参数：延迟时间（us）
   18          // 返回值：无   
   19          /***************************************************************************/
-  20          void delay_us(uint us_value)
+  20          void delay_us(WORD us_value)
   21          {
-  22   1              uint k;
-  23   1              while(us_value--)
+  22   1              WORD k;
+  23   1              while (us_value--)
   24   1              {
   25   2                      k++;
   26   2              }
@@ -41,10 +41,10 @@ line level    source
   31          // 参数：延迟时间（ms）
   32          // 返回值：无   
   33          /***************************************************************************/
-  34          void delay_ms(uint ms_value)
+  34          void delay_ms(WORD ms_value)
   35          {
-  36   1              uint k;
-  37   1              for(k=0;k<ms_value;k++)
+  36   1              WORD k;
+  37   1              for (k=0;k<ms_value;k++)
   38   1              {
   39   2                      delay_us(478);
   40   2              }

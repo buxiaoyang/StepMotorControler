@@ -1,291 +1,315 @@
-C51 COMPILER V7.50   UART                                                                  08/24/2014 16:57:12 PAGE 1   
+C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE UART
 OBJECT MODULE PLACED IN .\output\uart.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\uart.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\li
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\uart.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\li
                     -sting\uart.lst) OBJECT(.\output\uart.obj)
 
 line level    source
 
-   1          #include <uart.h>
-   2          #include <reg52.h>
+   1          #include "uart.h"
+   2          //#include <reg52.h>
    3          #include <intrins.h>
    4          #include <parameter.h>
-   5          #include <dispatch.h>
-   6          #include <timer.h>
-   7          
-   8          #define FOSC 11059200L      //System frequency
-   9          #define BAUD 115200         //UART baudrate
-  10          
-  11          /*Define UART parity mode*/
-  12          #define NONE_PARITY     0   //None parity
-  13          #define ODD_PARITY      1   //Odd parity
-  14          #define EVEN_PARITY     2   //Even parity
-  15          #define MARK_PARITY     3   //Mark parity
-  16          #define SPACE_PARITY    4   //Space parity
-  17          
-  18          #define PARITYBIT NONE_PARITY   //Testing even parity
+   5          
+   6          #include <stdio.h>
+   7          #include <stdlib.h>
+   8          #include <string.h>
+   9          
+  10          #define FOSC 11059200L      //System frequency
+  11          #define BAUD 115200         //UART baudrate
+  12          
+  13          /*Define UART parity mode*/
+  14          #define NONE_PARITY     0   //None parity
+  15          #define ODD_PARITY      1   //Odd parity
+  16          #define EVEN_PARITY     2   //Even parity
+  17          #define MARK_PARITY     3   //Mark parity
+  18          #define SPACE_PARITY    4   //Space parity
   19          
-  20          /*Declare SFR associated with the UART2 */
-  21          sfr AUXR  = 0x8e;           //Auxiliary register
-  22          sfr S2CON = 0x9a;           //UART2 control register
-  23          sfr S2BUF = 0x9b;           //UART2 data buffer
-  24          sfr BRT   = 0x9c;           //Baudrate generator
-  25          sfr IE2   = 0xaf;           //Interrupt control 2
-  26          
-  27          #define S2RI  0x01          //S2CON.0
-  28          #define S2TI  0x02          //S2CON.1
-  29          #define S2RB8 0x04          //S2CON.2
-  30          #define S2TB8 0x08          //S2CON.3
-  31          
-  32          bit busy;
-  33          bit uartReceiveOK = 0;
-  34          BYTE saveSetting = 0;
+  20          #define PARITYBIT NONE_PARITY   //Testing even parity
+  21          
+  22          #if 0
+              /*Declare SFR associated with the UART2 */
+              sfr AUXR  = 0x8e;           //Auxiliary register
+              sfr S2CON = 0x9a;           //UART2 control register
+              sfr S2BUF = 0x9b;           //UART2 data buffer
+              sfr BRT   = 0x9c;           //Baudrate generator
+              sfr IE2   = 0xaf;           //Interrupt control 2
+              #endif
+  30          
+  31          #define S2RI  0x01          //S2CON.0
+  32          #define S2TI  0x02          //S2CON.1
+  33          #define S2RB8 0x04          //S2CON.2
+  34          #define S2TB8 0x08          //S2CON.3
   35          
-  36          BYTE uartBuffer[15] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
-  37          
-  38          BYTE receiveSteps = 0;  // 0: 没有数据接收
-  39                                                          // 1: 接收到5A
-  40                                                          // 2：接收到A5
-  41                                                          // 3：接收到数据长度
-  42                                                          // 4: 接收数据
-  43                                                          // 5：确定指令动作
-  44          BYTE dataIndex = 0;
-  45          BYTE dataLength = 0;
-  46            
-  47          void SendData(BYTE dat);
-  48          void SendString(char *s);
-  49          void ReceiveData(BYTE dat);
-  50          void anyData();
-  51          
-  52          void uart_init()
-  53          {
-  54   1      #if (PARITYBIT == NONE_PARITY)
-C51 COMPILER V7.50   UART                                                                  08/24/2014 16:57:12 PAGE 2   
+  36          bit busy;
+  37          bit uartReceiveOK = 0;
+  38          //BYTE saveSetting = 0;
+  39          
+  40          BYTE uartBuffer[15] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
+  41          
+  42          BYTE receiveSteps = 0;  // 0: 没有数据接收
+  43                                                          // 1: 接收到5A
+  44                                                          // 2：接收到A5
+  45                                                          // 3：接收到数据长度
+  46                                                          // 4: 接收数据
+  47                                                          // 5：确定指令动作
+  48          BYTE dataIndex = 0;
+  49          BYTE dataLength = 0;
+  50            
+  51          void SendData(BYTE dat);
+  52          void SendString(char *s);
+  53          void ReceiveData(BYTE dat);
+  54          void anyData();
+C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 2   
 
-  55   1          S2CON = 0x50;           //8-bit variable UART
-  56   1      #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
+  55          
+  56          void uart_init()
+  57          {
+  58   1      #if (PARITYBIT == NONE_PARITY)
+  59   1          S2CON = 0x50;           //8-bit variable UART
+  60   1      #elif (PARITYBIT == ODD_PARITY) || (PARITYBIT == EVEN_PARITY) || (PARITYBIT == MARK_PARITY)
                   S2CON = 0xda;           //9-bit variable UART, parity bit initial to 1
               #elif (PARITYBIT == SPACE_PARITY)
                   S2CON = 0xd2;           //9-bit variable UART, parity bit initial to 0
               #endif
-  61   1      
-  62   1          BRT = -(FOSC/32/BAUD);  //Set auto-reload vaule of baudrate generator
-  63   1          AUXR |= 0x14;            //Baudrate generator work in 1T mode
-  64   1          IE2 = 0x01;             //Enable UART2 interrupt
-  65   1          EA = 1;                 //Open master interrupt switch
-  66   1      
-  67   1          //SendString("STC12C5A60S2\r\nUart2 Test !\r\n");
-  68   1          //while(1);
-  69   1      }
-  70          
-  71          /*----------------------------
-  72          UART2 interrupt service routine
-  73          ----------------------------*/
-  74          void Uart2() interrupt 8 using 1
-  75          {
-  76   1          if (S2CON & S2RI)
-  77   1          {
-  78   2              S2CON &= ~S2RI;     //Clear receive interrupt flag
-  79   2              ReceiveData(S2BUF);
-  80   2                      //P2 = S2BUF;         //P0 show UART data
-  81   2              //P2 = (S2CON & S2RB8);//P2.2 show parity bit
-  82   2          }
-  83   1          if (S2CON & S2TI)
-  84   1          {
-  85   2              S2CON &= ~S2TI;     //Clear transmit interrupt flag
-  86   2              busy = 0;           //Clear transmit busy flag
-  87   2          }
-  88   1      }
-  89          
-  90          /*----------------------------
-  91          Send a byte data to UART
-  92          Input: dat (data to be sent)
-  93          Output:None
-  94          ----------------------------*/
-  95          void SendData(BYTE dat)
-  96          {
-  97   1          while (busy);           //Wait for the completion of the previous data is sent
-  98   1          ACC = dat;              //Calculate the even parity bit P (PSW.0)
-  99   1          if (P)                  //Set the parity bit according to P
- 100   1          {
- 101   2      #if (PARITYBIT == ODD_PARITY)
-                      S2CON &= ~S2TB8;    //Set parity bit to 0
-              #elif (PARITYBIT == EVEN_PARITY)
-                      S2CON |= S2TB8;     //Set parity bit to 1
-              #endif
- 106   2          }
- 107   1          else
- 108   1          {
- 109   2      #if (PARITYBIT == ODD_PARITY)
-                      S2CON |= S2TB8;     //Set parity bit to 1
-              #elif (PARITYBIT == EVEN_PARITY)
-                      S2CON &= ~S2TB8;    //Set parity bit to 0
-              #endif
- 114   2          }
- 115   1          busy = 1;
- 116   1          S2BUF = ACC;            //Send data to UART2 buffer
-C51 COMPILER V7.50   UART                                                                  08/24/2014 16:57:12 PAGE 3   
+  65   1      
+  66   1          BRT = -(FOSC/32/BAUD);  //Set auto-reload vaule of baudrate generator
+  67   1          AUXR |= 0x14;            //Baudrate generator work in 1T mode
+  68   1          IE2 = 0x01;             //Enable UART2 interrupt
+  69   1          EA = 1;                 //Open master interrupt switch
+  70   1      
+  71   1      }
+  72          
+  73          void Uart2InterruptReceive(void) interrupt 8
+  74          {
+  75   1              unsigned char tmp = 0;
+  76   1              char i = 0;
+  77   1      
+  78   1              IE2 &= (~ES2);//关闭串口2中断//ES2 = 0;
+  79   1              if (S2CON & S2RI)       //if(S2RI == 1)
+  80   1              {
+  81   2      
+  82   2                      S2CON &= (~S2RI);//S2RI = 0;
+  83   2                      tmp = S2BUF;
+  84   2                      ReceiveData(tmp);
+  85   2              }
+  86   1              else
+  87   1              {
+  88   2                      S2CON &= (~S2TI);//S2TI = 0;
+  89   2              }
+  90   1      
+  91   1              IE2 |= ES2;//ES2 = 1;
+  92   1      }
+  93          
+  94          void SendData(char i)
+  95          {
+  96   1              unsigned char temp = 0;
+  97   1              
+  98   1              IE2 &= (~ES2);//关闭串口2中断//ES2 = 0;
+  99   1              S2CON &= (~S2TI);//S2TI = 0;
+ 100   1              S2BUF = i;//装入数据
+ 101   1              do
+ 102   1              {
+ 103   2                      temp = S2CON;
+ 104   2                      temp = temp & 0x02;//temp = S2TI;
+ 105   2              }while(temp == 0);//判断是否发送完毕
+ 106   1      
+ 107   1              S2CON &= (~S2TI);//S2TI = 0;
+ 108   1              IE2 |= ES2;//ES2 = 1;
+ 109   1                      
+ 110   1      }
+ 111          
+ 112          void SendString(char *data_at)
+ 113          {
+ 114   1              unsigned char cnt=0;
+ 115   1      
+ 116   1              IE2 &= (~ES2);//关闭串口2中断//ES2 = 0;
+C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 3   
 
- 117   1      }
- 118          
- 119          /*----------------------------
- 120          Send a string to UART
- 121          Input: s (address of string)
- 122          Output:None
- 123          ----------------------------*/
- 124          void SendString(char *s)
- 125          {
- 126   1          while (*s)              //Check the end of the string
- 127   1          {
- 128   2              SendData(*s++);     //Send current char and increment string ptr
- 129   2          }
- 130   1      }
+ 117   1              S2CON &= (~S2TI);//S2TI = 0;            
+ 118   1              while(*(data_at+cnt))   //判断一串数据是否结束
+ 119   1              {
+ 120   2                      S2BUF = *(data_at+cnt);//装入数据
+ 121   2                      while((S2CON & S2TI) == 0);
+ 122   2                      S2CON &= (~S2TI);//S2TI = 0;
+ 123   2                      cnt++;
+ 124   2      
+ 125   2              }
+ 126   1      
+ 127   1              S2CON &= (~S2TI);//S2TI = 0;
+ 128   1              IE2 |= ES2;//ES2 = 1;           
+ 129   1      }
+ 130          
  131          
- 132          void SendDataToScreen(WORD address, WORD dat)
+ 132          void SendBuffer(char *buf, int len)
  133          {
- 134   1              SendData(0x5A);
- 135   1              SendData(0xA5);
- 136   1              SendData(0x05);
- 137   1              SendData(0x82);
- 138   1              SendData(address>>8);
- 139   1              SendData(address);
- 140   1              SendData(dat>>8);
- 141   1              SendData(dat);
- 142   1      }
- 143          
- 144          void ChangeScreenPage(WORD page)
- 145          {
- 146   1              SendData(0x5A);
- 147   1              SendData(0xA5);
- 148   1              SendData(0x04);
- 149   1              SendData(0x80);
- 150   1              SendData(0x03);
- 151   1              SendData(page>>8);
- 152   1              SendData(page);
- 153   1      }
- 154          
- 155          void ReceiveData(BYTE dat)
- 156          {
- 157   1              // 0: 接收到5A
- 158   1              // 1：接收到A5
- 159   1              // 2：接收到数据长度
- 160   1              // 3: 接收数据
- 161   1              // 4：确定指令动作
- 162   1              switch(receiveSteps)
- 163   1              {
- 164   2                      case 0:
- 165   2                              if(dat == 0x5A)
- 166   2                              {
- 167   3                                      receiveSteps ++;
- 168   3                              }
- 169   2                      break;
- 170   2                      case 1:
- 171   2                              if(dat == 0xA5)
- 172   2                              {
- 173   3                                      receiveSteps ++;
- 174   3                              }
- 175   2                              else
- 176   2                              {
- 177   3                                      receiveSteps = 0;
- 178   3                              }
-C51 COMPILER V7.50   UART                                                                  08/24/2014 16:57:12 PAGE 4   
+ 134   1              int i = 0;
+ 135   1              for (i = 0; i < len; i++)
+ 136   1              {
+ 137   2                      SendData(buf[i]);
+ 138   2              }
+ 139   1      }
+ 140          
+ 141          // name=value
+ 142          void SendKeyValue(char *name, int value)
+ 143          {
+ 144   1              int len = 0;
+ 145   1              char dataBuf[50] = {0};
+ 146   1              len = sprintf(dataBuf, "%s=%d\r\n", name, value);
+ 147   1              SendBuffer(dataBuf, len);
+ 148   1      }
+ 149          
+ 150          void ReceiveData(BYTE dat)
+ 151          {
+ 152   1              // 0: 接收到5A
+ 153   1              // 1：接收到A5
+ 154   1              // 2：接收到数据长度
+ 155   1              // 3: 接收数据
+ 156   1              // 4：确定指令动作
+ 157   1              switch(receiveSteps)
+ 158   1              {
+ 159   2                      case 0:
+ 160   2                              if(dat == 0x5A)
+ 161   2                              {
+ 162   3                                      receiveSteps ++;
+ 163   3                              }
+ 164   2                      break;
+ 165   2                      case 1:
+ 166   2                              if(dat == 0xA5)
+ 167   2                              {
+ 168   3                                      receiveSteps ++;
+ 169   3                              }
+ 170   2                              else
+ 171   2                              {
+ 172   3                                      receiveSteps = 0;
+ 173   3                              }
+ 174   2                      break;
+ 175   2                      case 2:
+ 176   2                              dataLength = dat;
+ 177   2                              dataIndex = 0;
+ 178   2                              receiveSteps ++;
+C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 4   
 
  179   2                      break;
- 180   2                      case 2:
- 181   2                              dataLength = dat;
- 182   2                              dataIndex = 0;
- 183   2                              receiveSteps ++;
- 184   2                      break;
- 185   2                      case 3:
- 186   2                              uartBuffer[dataIndex] = dat;
- 187   2                              dataIndex ++;
- 188   2                              if(dataIndex >= dataLength)
- 189   2                              {
- 190   3                                      anyData();
- 191   3                                      receiveSteps = 0;
- 192   3                              }
- 193   2                      break;
- 194   2                      default:
- 195   2                              _nop_();
- 196   2                              receiveSteps = 0;
- 197   2              }
- 198   1      }
- 199          
- 200          void anyData()
- 201          {
- 202   1              WORD dat = ((uartBuffer[4]<<8) | uartBuffer[5]);
- 203   1              
- 204   1              if(uartBuffer[2] == 0x00)//脉冲个数
- 205   1              {
- 206   2                      pulseSettingNum =  dat;
- 207   2                      saveSetting = 1;
- 208   2              }
- 209   1              else if(uartBuffer[2] == 0x02) //脉冲频率
- 210   1              {
- 211   2                      //pulseSettingFreq =  dat;
- 212   2                      //saveSetting = 1;
- 213   2              }
- 214   1              else if(uartBuffer[2] == 0x04) //电机步进角
- 215   1              {
- 216   2                      //motorStepAngle =  dat;
- 217   2                      //saveSetting = 1;
- 218   2              }
- 219   1              else if(uartBuffer[2] == 0x06) // 丝杆丝距
+ 180   2                      case 3:
+ 181   2                              uartBuffer[dataIndex] = dat;
+ 182   2                              dataIndex ++;
+ 183   2                              if(dataIndex >= dataLength)
+ 184   2                              {
+ 185   3                                      anyData();
+ 186   3                                      receiveSteps = 0;
+ 187   3                              }
+ 188   2                      break;
+ 189   2                      default:
+ 190   2                              _nop_();
+ 191   2                              receiveSteps = 0;
+ 192   2              }
+ 193   1      }
+ 194          
+ 195          void anyData()
+ 196          {
+ 197   1              ParseCommand(uartBuffer, sizeof(uartBuffer));
+ 198   1              uartReceiveOK = 1;      
+ 199   1      }
+ 200          
+ 201          
+ 202          /*////////////////////////////////////////////////////////////////////////////////////////////////////
+ 203          // 函数名:char Uart1Init(char smod,char brtx12,unsigned char reload)
+ 204          // 作用:        初始化用于连接gps的串口1 ,将串口1设置位独立波特率发生器提供波特率，
+ 205                                  并打开串口1中断和全局中断
+ 206          // 参数:        smod    smod位  0/1
+ 207                                  brtx12  brtx12位  0/1
+ 208                                  reload  reload寄存器数值  0-255
+ 209          // 返回:        -1              smod位错误，没有写入0/1
+ 210                                  -2              brtx12位错误，没有写入0/1
+ 211                                  0               
+ 212          ////////////////////////////////////////////////////////////////////////////////////////////////////*/
+ 213          //串口设置位独立波特率提供波特率，和串口2使用同一个波特率，也可以使用定时器1来提供波特率
+ 214          char Uart1Init(char smod,char brtx12,unsigned char reload)
+ 215          {
+ 216   1              SCON =  0X50;//8位可变波特率，无奇偶位(SM0=0,SM1=1),使能串口接收模块(REN=1)
+ 217   1              BRT     = reload;//设置独立波特率发生器波特率
+ 218   1      
+ 219   1              if(smod == 1)
  220   1              {
- 221   2                      screwPitch =  dat;
- 222   2                      saveSetting = 1;
- 223   2              }
- 224   1              else if(uartBuffer[2] == 0x08)  //电机减速比
- 225   1              {
- 226   2                      motorReducGearRatio =  dat;
- 227   2                      saveSetting = 1;
- 228   2              }
- 229   1              else if(uartBuffer[2] == 0x0A) //丝杆导程
- 230   1              {
- 231   2                      ballScrew =  dat;
- 232   2                      saveSetting = 1;
- 233   2              }
- 234   1              else if(uartBuffer[2] == 0x0C) //电机旋转角
- 235   1              {
- 236   2                      motorRotationAngle =  dat;
- 237   2                      saveSetting = 1;
- 238   2              }
- 239   1              else if(uartBuffer[2] == 0x14) //初始化按钮
- 240   1              {
-C51 COMPILER V7.50   UART                                                                  08/24/2014 16:57:12 PAGE 5   
+ 221   2                      PCON |= SMOD;   //SMOD = 1;//波特率倍速位
+ 222   2              }
+ 223   1              else if(smod == 0)
+ 224   1              {
+ 225   2                      PCON &= (~SMOD);   //SMOD = 0;//取消波特率倍速位
+ 226   2              }
+ 227   1              else
+ 228   1              {
+ 229   2                      return -1;
+ 230   2              }
+ 231   1                      
+ 232   1              if(brtx12 == 1)
+ 233   1              {
+ 234   2                      AUXR |= BRTx12;//BRTx12 = 1;1T模式      
+ 235   2              }
+ 236   1              else if(brtx12 == 0)
+ 237   1              {
+ 238   2                      AUXR &= (~BRTx12);//BRTx12 = 0;12T模式          
+ 239   2              }
+ 240   1              else
+C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 5   
 
- 241   2                      motorDirection = 0;
- 242   2                      pulseSettingNumCount = 65535;
- 243   2                      timer_count = 50;
- 244   2                      initFlag = 1;
- 245   2                      refreshDisplay = 1;
- 246   2              }
- 247   1              else if(uartBuffer[2] == 0x16) //后退按钮
- 248   1              {
- 249   2                      motorDirection = 0;
- 250   2                      pulseSettingNumCount = pulseSettingNum;
- 251   2                      currentPosition --;
- 252   2                      timer_count = 50;
- 253   2                      refreshDisplay = 1;     
- 254   2              }
- 255   1              else if(uartBuffer[2] == 0x18) //前进按钮
- 256   1              {
- 257   2                      motorDirection = 1;
- 258   2                      pulseSettingNumCount = pulseSettingNum;
- 259   2                      currentPosition ++;
- 260   2                      timer_count = 50;
- 261   2                      refreshDisplay = 1;
- 262   2              }
- 263   1              uartReceiveOK = 1;      
- 264   1      }
+ 241   1              {
+ 242   2                      return -2;
+ 243   2              }
+ 244   1              
+ 245   1              AUXR |= S1BRS;//串口1设置为使用独立波特率发生器                                                                         
+ 246   1              AUXR |= BRTR;//开启波特率发生器                                                                 
+ 247   1                                                                                              
+ 248   1              ES = 1;    //开串口中断
+ 249   1              EA = 1;    //开总中断
+ 250   1              return 0;       
+ 251   1      }
+ 252          
+ 253          /*////////////////////////////////////////////////////////////////////////////////////////////////////
+ 254          // 函数名:void Uart1Send(char i)
+ 255          // 作用: 用于gps连接的串口1向gps发送1字节数据
+ 256          // 参数:        i       要发送的数据    
+ 257          // 返回:         void
+ 258          ////////////////////////////////////////////////////////////////////////////////////////////////////*/
+ 259          void Uart1Send(char i)
+ 260          {
+ 261   1              ES = 0; //关串口中断
+ 262   1              TI = 0; //清空发送完中断请求标志位
+ 263   1              SBUF = i;  //将数据放入寄存器发送
+ 264   1              while(TI == 0);//等待发送完毕，发送完毕 TI == 1
+ 265   1              TI = 0; //清空发送完中断请求标志位
+ 266   1              ES = 1;  //开串口中断   
+ 267   1      }
+ 268          
+ 269          /*////////////////////////////////////////////////////////////////////////////////////////////////////
+ 270          // 函数名:void Uart1Sends(char* at)
+ 271          // 作用: 发送字符串到串口1
+ 272          // 参数: char* at 字符串头地址
+ 273          // 返回:
+ 274          ////////////////////////////////////////////////////////////////////////////////////////////////////*/
+ 275          void Uart1Sends(char* at)
+ 276          {
+ 277   1              unsigned char cnt=0;
+ 278   1      
+ 279   1              ES=0;//关串行口中断     
+ 280   1              while(*(at+cnt))        //判断一串数据是否结束
+ 281   1              {
+ 282   2                      SBUF=*(at+cnt); //发送数据
+ 283   2                      while(TI==0);   //查询发送是否结束
+ 284   2                      TI=0;   //清除发送一标志位
+ 285   2                      cnt++;  //准备发送一个数据
+ 286   2              }
+ 287   1              ES=1;//开串行口中断             
+ 288   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    512    ----
-   CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =     19       3
+   CODE SIZE        =    590    ----
+   CONSTANT SIZE    =     58    ----
+   XDATA SIZE       =     18      67
    PDATA SIZE       =   ----    ----
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----

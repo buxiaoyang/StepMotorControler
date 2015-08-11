@@ -11,9 +11,14 @@
 
 #ifndef __TIMER_H__
 #define __TIMER_H__
+#include "basefunc.h"
 
-extern unsigned int timer_count;
-extern unsigned int pulseSettingNumCount;
+//extern unsigned int timer_count;
+//extern unsigned int pulseSettingNumCount;
 void timer_init();
+void AdjustTimerCount();
+void SetTimerParameter(WORD timerCount, WORD pulseCount);
+void SetTimerParameter1(WORD timerCount, WORD pulseCount);
 
+void StopPulseTimer();
 #endif

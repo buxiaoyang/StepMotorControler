@@ -17,10 +17,10 @@
 // 参数：延迟时间（us）
 // 返回值：无	
 /***************************************************************************/
-void delay_us(uint us_value)
+void delay_us(WORD us_value)
 {
-	uint k;
-	while(us_value--)
+	WORD k;
+	while (us_value--)
 	{
 		k++;
 	}
@@ -31,10 +31,10 @@ void delay_us(uint us_value)
 // 参数：延迟时间（ms）
 // 返回值：无	
 /***************************************************************************/
-void delay_ms(uint ms_value)
+void delay_ms(WORD ms_value)
 {
-	uint k;
-	for(k=0;k<ms_value;k++)
+	WORD k;
+	for (k=0;k<ms_value;k++)
 	{
 		delay_us(478);
 	}

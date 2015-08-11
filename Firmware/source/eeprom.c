@@ -12,7 +12,7 @@
 #include <intrins.h>
 #include <eeprom.h>
 
-
+#if 0
 /*Declare SFR associated with the IAP */
 sfr IAP_DATA    =   0xC2;           //Flash data register
 sfr IAP_ADDRH   =   0xC3;           //Flash address HIGH
@@ -20,6 +20,7 @@ sfr IAP_ADDRL   =   0xC4;           //Flash address LOW
 sfr IAP_CMD     =   0xC5;           //Flash command register
 sfr IAP_TRIG    =   0xC6;           //Flash command trigger
 sfr IAP_CONTR   =   0xC7;           //Flash control register
+#endif
 
 /*Define ISP/IAP/EEPROM command*/
 #define CMD_IDLE    0               //Stand-By

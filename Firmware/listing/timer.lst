@@ -1,90 +1,150 @@
-C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:57:13 PAGE 1   
+C51 COMPILER V7.50   TIMER                                                                 08/08/2015 15:51:32 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE TIMER
 OBJECT MODULE PLACED IN .\output\timer.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\timer.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\l
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\timer.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\l
                     -isting\timer.lst) OBJECT(.\output\timer.obj)
 
 line level    source
 
-   1          #include <timer.h>
-   2          #include <reg52.h>
-   3          #include <intrins.h>
-   4          #include <parameter.h>
-   5          #include <key.h>
-   6          
-   7          typedef unsigned char BYTE;
-   8          typedef unsigned int WORD;
+   1          #include "timer.h"
+   2          #include <intrins.h>
+   3          #include <parameter.h>
+   4          #include <key.h>
+   5          
+   6          #include "debug.h"
+   7          
+   8          //-----------------------------------------------
    9          
-  10          //-----------------------------------------------
-  11          
-  12          /* define constants */
-  13          #define FOSC 11059200L
-  14          #define MODE1T                      //Timer clock mode, comment this line is 12T mode, uncomment is 1T mod
+  10          /* define constants */
+  11          #define FOSC 11059200L
+  12          #define MODE1T                      //Timer clock mode, comment this line is 12T mode, uncomment is 1T mod
              -e
-  15          
-  16          #ifdef MODE1T
-  17          #define T1MS (65536-FOSC/1000)      //1ms timer calculation method in 1T mode
-  18          #else
+  13          
+  14          #ifdef MODE1T
+  15          #define T1MS (65536-FOSC/1000)      //1ms timer calculation method in 1T mode
+  16          #else
               #define T1MS (65536-FOSC/12/1000)   //1ms timer calculation method in 12T mode
               #endif
-  21          
-  22          /* define SFR */
-  23          sfr AUXR = 0x8e;                    //Auxiliary register
-  24          
-  25          /* define variables */
-  26          WORD count;                         //1000 times counter
-  27          WORD timer_count;
-  28          WORD pulseSettingNumCount;
-  29          //-----------------------------------------------
-  30          
-  31          /* Timer0 interrupt routine */
-  32          void tm0_isr() interrupt 1 using 1
-  33          {
-  34   1          //TL0 = T1MS;                     //reload timer0 low byte
-  35   1          //TH0 = T1MS >> 8;                //reload timer0 high byte
-  36   1              TL0 = 0x8B;             //设置定时初值
-  37   1              TH0 = 0xFC;             //设置定时初值
-  38   1          if (count-- == 0)               //1ms * 1000 -> 1s
-  39   1          {
-  40   2                      if(pulseSettingNumCount >0)
-  41   2                      {
-  42   3                              motorPWM = 1;
-  43   3                              pulseSettingNumCount --;
-  44   3                              motorPWM = ~motorPWM;
-  45   3                      }
-  46   2                      count = timer_count;               //reset counter
-  47   2          }
-  48   1      }
-  49          
-  50          //-----------------------------------------------
-  51          
-  52          /* main program */
-  53          void timer_init()
-C51 COMPILER V7.50   TIMER                                                                 08/24/2014 16:57:13 PAGE 2   
+  19          
+  20          /* define SFR */
+  21          //sfr AUXR = 0x8e;                    //Auxiliary register
+  22          
+  23          /* define variables */
+  24          static WORD count;                         //1000 times counter
+  25          WORD timer_count;
+  26          WORD pulseSettingNumCount;
+  27          //-----------------------------------------------
+  28          
+  29          /* Timer0 interrupt routine */
+  30          void tm0_isr() interrupt 1 using 1
+  31          {
+  32   1          //TL0 = T1MS;                     //reload timer0 low byte
+  33   1          //TH0 = T1MS >> 8;                //reload timer0 high byte
+  34   1              TL0 = 0x8B;             //设置定时初值
+  35   1              TH0 = 0xFC;             //设置定时初值
+  36   1          if (count-- == 0)               //1ms * 1000 -> 1s
+  37   1          {
+  38   2                      if (pulseSettingNumCount > 0)
+  39   2                      {
+  40   3                              //DebugParameter("pulseSettingNumCount", pulseSettingNumCount);
+  41   3                              //motorPWM = 1;
+  42   3                              //pulseSettingNumCount --;
+  43   3                              //motorPWM = ~motorPWM;
+  44   3                              DisablePulse();
+  45   3                              pulseSettingNumCount--;
+  46   3                              ChangePulse();
+  47   3                      }
+  48   2                      else
+  49   2                      {  
+  50   3                              FinishPulse();
+  51   3                      }
+  52   2                      count = timer_count;               //reset counter
+  53   2          }
+C51 COMPILER V7.50   TIMER                                                                 08/08/2015 15:51:32 PAGE 2   
 
-  54          {
-  55   1      #ifdef MODE1T
-  56   1          AUXR |= 0x80;                    //timer0 work in 1T mode
-  57   1      #endif
-  58   1          TMOD = 0x01;                    //set timer0 as mode1 (16-bit)
-  59   1          //TL0 = T1MS;                     //initial timer0 low byte
-  60   1          //TH0 = T1MS >> 8;                //initial timer0 high byte
-  61   1              TL0 = 0x8B;             //设置定时初值
-  62   1              TH0 = 0xFC;             //设置定时初值
-  63   1          TR0 = 1;                        //timer0 start running
-  64   1          ET0 = 1;                        //enable timer0 interrupt
-  65   1          EA = 1;                         //open global interrupt switch
-  66   1          count = 0;                      //initial counter
-  67   1              timer_count = 50;
-  68   1              pulseSettingNumCount = 0;
-  69   1      }
-  70          
+  54   1      }
+  55          
+  56          //-----------------------------------------------
+  57          
+  58          /* main program */
+  59          void timer_init()
+  60          {
+  61   1      #ifdef MODE1T
+  62   1          AUXR |= 0x80;                    //timer0 work in 1T mode
+  63   1      #endif
+  64   1          TMOD = 0x01;                    //set timer0 as mode1 (16-bit)
+  65   1          //TL0 = T1MS;                     //initial timer0 low byte
+  66   1          //TH0 = T1MS >> 8;                //initial timer0 high byte
+  67   1              TL0 = 0x8B;             //设置定时初值
+  68   1              TH0 = 0xFC;             //设置定时初值
+  69   1          TR0 = 1;                        //timer0 start running
+  70   1          ET0 = 1;                        //enable timer0 interrupt
+  71   1          EA = 1;                         //open global interrupt switch
+  72   1          count = 0;                      //initial counter
+  73   1              timer_count = 50;
+  74   1              pulseSettingNumCount = 0;
+  75   1      }
+  76          
+  77          void AdjustTimerCount()
+  78          {
+  79   1              if (pulseSettingNumCount > 20)
+  80   1              {
+  81   2                      timer_count --;
+  82   2              }
+  83   1              else
+  84   1              {
+  85   2                      timer_count ++;
+  86   2              }
+  87   1              
+  88   1              if (timer_count < 1)
+  89   1              {
+  90   2                      timer_count = 1;        
+  91   2              }
+  92   1              else if (timer_count > 50)
+  93   1              {
+  94   2                      timer_count = 50;
+  95   2              }
+  96   1      }
+  97          
+  98          void StopPulseTimer()
+  99          {
+ 100   1              TR0 = 0;
+ 101   1          ET0 = 0; 
+ 102   1              FinishPulse();
+ 103   1              Debug("StopPulseTimer\r\n");
+ 104   1      }
+ 105          
+ 106          void SetTimerParameter(WORD timerCount, WORD pulseCount)
+ 107          {
+ 108   1              TR0 = 0;
+ 109   1          ET0 = 0; 
+ 110   1          
+ 111   1              //DebugParameter("before timerCount", timerCount);
+ 112   1              //DebugParameter("before pulseSettingNumCount", pulseCount);
+ 113   1              if (timerCount > 0)
+ 114   1              {
+ 115   2                      timer_count = timerCount;
+C51 COMPILER V7.50   TIMER                                                                 08/08/2015 15:51:32 PAGE 3   
+
+ 116   2              }
+ 117   1      
+ 118   1              if (pulseCount > 0)
+ 119   1              {
+ 120   2                      pulseSettingNumCount = pulseCount;
+ 121   2              }
+ 122   1              
+ 123   1              
+ 124   1              TR0 = 1;
+ 125   1          ET0 = 1;   
+ 126   1              //DebugParameter("timer_count", timer_count);
+ 127   1              //DebugParameter("pulseSettingNumCount", pulseSettingNumCount); 
+ 128   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    127    ----
+   CODE SIZE        =    277    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =      6    ----
    PDATA SIZE       =   ----    ----

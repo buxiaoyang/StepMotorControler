@@ -1,11 +1,9 @@
-#include <timer.h>
-#include <reg52.h>
+#include "timer.h"
 #include <intrins.h>
 #include <parameter.h>
 #include <key.h>
 
-typedef unsigned char BYTE;
-typedef unsigned int WORD;
+#include "debug.h"
 
 //-----------------------------------------------
 
@@ -20,10 +18,10 @@ typedef unsigned int WORD;
 #endif
 
 /* define SFR */
-sfr AUXR = 0x8e;                    //Auxiliary register
+//sfr AUXR = 0x8e;                    //Auxiliary register
 
 /* define variables */
-WORD count;                         //1000 times counter
+static WORD count;                         //1000 times counter
 WORD timer_count;
 WORD pulseSettingNumCount;
 //-----------------------------------------------
@@ -37,11 +35,19 @@ void tm0_isr() interrupt 1 using 1
 	TH0 = 0xFC;		//设置定时初值
     if (count-- == 0)               //1ms * 1000 -> 1s
     {
-		if(pulseSettingNumCount >0)
+		if (pulseSettingNumCount > 0)
 		{
-			motorPWM = 1;
-			pulseSettingNumCount --;
-			motorPWM = ~motorPWM;
+			//DebugParameter("pulseSettingNumCount", pulseSettingNumCount);
+			//motorPWM = 1;
+			//pulseSettingNumCount --;
+			//motorPWM = ~motorPWM;
+			DisablePulse();
+			pulseSettingNumCount--;
+			ChangePulse();
+		}
+		else
+		{  
+			FinishPulse();
 		}
 		count = timer_count;               //reset counter
     }
@@ -68,3 +74,55 @@ void timer_init()
 	pulseSettingNumCount = 0;
 }
 
+void AdjustTimerCount()
+{
+	if (pulseSettingNumCount > 20)
+	{
+		timer_count --;
+	}
+	else
+	{
+		timer_count ++;
+	}
+	
+	if (timer_count < 1)
+	{
+		timer_count = 1;	
+	}
+	else if (timer_count > 50)
+	{
+		timer_count = 50;
+	}
+}
+
+void StopPulseTimer()
+{
+	TR0 = 0;
+    ET0 = 0; 
+	FinishPulse();
+	Debug("StopPulseTimer\r\n");
+}
+
+void SetTimerParameter(WORD timerCount, WORD pulseCount)
+{
+	TR0 = 0;
+    ET0 = 0; 
+    
+	//DebugParameter("before timerCount", timerCount);
+	//DebugParameter("before pulseSettingNumCount", pulseCount);
+	if (timerCount > 0)
+	{
+		timer_count = timerCount;
+	}
+
+	if (pulseCount > 0)
+	{
+		pulseSettingNumCount = pulseCount;
+	}
+	
+	
+	TR0 = 1;
+    ET0 = 1;   
+	//DebugParameter("timer_count", timer_count);
+	//DebugParameter("pulseSettingNumCount", pulseSettingNumCount);	
+}

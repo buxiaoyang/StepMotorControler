@@ -1,9 +1,9 @@
-C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:57:11 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  08/08/2015 15:51:17 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
 OBJECT MODULE PLACED IN .\output\main.obj
-COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE source\main.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\li
+COMPILER INVOKED BY: d:\Keil\C51\BIN\C51.EXE source\main.c LARGE BROWSE INCDIR(.\include\) DEBUG OBJECTEXTEND PRINT(.\li
                     -sting\main.lst) OBJECT(.\output\main.obj)
 
 line level    source
@@ -20,178 +20,84 @@ line level    source
   10          // 编译：Keil uVision3 V3.90
   11          /***************************************************************************/
   12          
-  13          #include <reg52.h>
-  14          #include <basefunc.h>
-  15          #include <parameter.h>
-  16          #include <uart.h>
+  13          #include "basefunc.h"
+  14          #include "parameter.h"
+  15          #include "screen.h"
+  16          #include "uart.h"
   17          #include <timer.h>
   18          #include <key.h>
   19          #include <dispatch.h>
   20          
-  21          void parameter_send_screen()
-  22          {
-  23   1              SendDataToScreen(0x0010, currentPosition);
-  24   1              SendDataToScreen(0x0000, pulseSettingNum);
-  25   1              SendDataToScreen(0x0002, pulseSettingFreq);
-  26   1              SendDataToScreen(0x0004, motorStepAngle);
-  27   1              SendDataToScreen(0x0006, screwPitch);
-  28   1              SendDataToScreen(0x0008, motorReducGearRatio);
-  29   1              SendDataToScreen(0x000A, ballScrew);
-  30   1              SendDataToScreen(0x000C, motorRotationAngle);
-  31   1              SendDataToScreen(0x0012, isStartPosition);
-  32   1      }
-  33          
-  34          void getSensorStatus()
-  35          {
-  36   1              //初始位置传感器
-  37   1              if(sensorStartPosi1 == 0)
-  38   1              {
-  39   2                      if(isStartPosition1 == 0)
-  40   2                      {
-  41   3                              refreshDisplay = 1;
-  42   3                      }
-  43   2                      isStartPosition1 = 1;
-  44   2              }
-  45   1              if(sensorStartPosi1 == 1)
-  46   1              {
-  47   2                      if(isStartPosition1 == 1)
-  48   2                      {
-  49   3                              refreshDisplay = 1;
-  50   3                      }
-  51   2                      isStartPosition1 = 0;
-  52   2              }
-  53   1              //初始位置传感器2
-  54   1              if(sensorStartPosi2 == 0)
-C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:57:11 PAGE 2   
+  21          #if 0
+              void PluseDelay(unsigned int a)
+              {
+                      while(a--);
+              }
+              
+              void TestRun()
+              {
+                      /*
+                      驱动步进电机转动一圈
+                      步进电机参数：细分倍数:8        步数/圈(1.8/整步):1600
+                      实际的步进角=1.8/8=0.225，旋转一圈需要脉冲个数=360/0.225=1600
+                      */
+                      unsigned int i = 0;
+                      secondMotorDirection = 0;
+                      for (i = 0; i < 1600; i++)
+                      {
+                              secondMotorPWM = 1;
+                              PluseDelay(800);
+                              secondMotorPWM = ~secondMotorPWM;
+                              PluseDelay(800);
+                      }
+                      while (1);
+              }
+              #endif
+  46          
+  47          void main()
+  48          {
+  49   1              WORD count10ms = 0;
+  50   1              delay_ms(500);
+  51   1              // 初始化硬件
+  52   1              InitHardware();
+  53   1          // 初始化参数
+  54   1              InitParameters();
+C51 COMPILER V7.50   MAIN                                                                  08/08/2015 15:51:17 PAGE 2   
 
-  55   1              {
-  56   2                      if(isStartPosition2 == 0)
-  57   2                      {
-  58   3                              refreshDisplay = 1;
-  59   3                      }
-  60   2                      isStartPosition2 = 1;
-  61   2              }
-  62   1              if(sensorStartPosi2 == 1)
-  63   1              {
-  64   2                      if(isStartPosition2 == 1)
-  65   2                      {
-  66   3                              refreshDisplay = 1;
-  67   3                      }
-  68   2                      isStartPosition2 = 0;
-  69   2              }
-  70   1              //电磁铁输入
-  71   1              if(electromagnetIn == 0)
-  72   1              {
-  73   2                      electromagnetOut = 0;
-  74   2              }
-  75   1              else
-  76   1              {
-  77   2                      electromagnetOut = 1;
-  78   2              }
-  79   1      }
+  55   1              
+  56   1              while (1)
+  57   1              {
+  58   2                      delay_us(100);
+  59   2                      //按键扫描---10us*30=300us=0.3ms,控制按键扫描频率
+  60   2                      count10ms++;
+  61   2                      if(count10ms > 29)
+  62   2                      {
+  63   3                              ScanKey();
+  64   3                              count10ms = 0;
+  65   3                      }
+  66   2      
+  67   2                      AdjustTimerCount();
+  68   2                      CheckSensorInput();
+  69   2                      StartSecondMotor();
+  70   2                      DisplayParameters();
+  71   2                      SaveParameters();
+  72   2              } 
+  73   1      }
+  74          
+  75          
+  76          
+  77          
+  78          
+  79          
   80          
-  81          /***************************************************************************/
-  82          // 主函数
-  83          // 参数：无
-  84          // 返回值：无   
-  85          /***************************************************************************/
-  86          void main()
-  87          {
-  88   1              uint count10ms = 0;
-  89   1              unsigned long temp = 0;
-  90   1              delay_ms(500);
-  91   1              parameter_init();
-  92   1              uart_init();
-  93   1              timer_init();
-  94   1              while(1)
-  95   1              {
-  96   2                      delay_us(100);
-  97   2                      //按键扫描
-  98   2                      count10ms++;
-  99   2                      if(count10ms > 29)
- 100   2                      {
- 101   3                              Key_Scan();
- 102   3                              count10ms = 0;
- 103   3                      }
- 104   2                      //General the PWM
- 105   2                      if(pulseSettingNumCount > 20)
- 106   2                      {
- 107   3                              timer_count --;
- 108   3                      }
- 109   2                      else
- 110   2                      {
- 111   3                              timer_count ++;
- 112   3                      }
- 113   2                      if(timer_count < 1)
- 114   2                      {
- 115   3                              timer_count = 1;        
- 116   3                      }
-C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:57:11 PAGE 3   
-
- 117   2                      else if(timer_count > 50)
- 118   2                      {
- 119   3                              timer_count = 50;
- 120   3                      }
- 121   2                      //Get the sensor status
- 122   2                      getSensorStatus();
- 123   2                      if(isStartPosition2 || isStartPosition1)
- 124   2                      {
- 125   3                              isStartPosition = 1;
- 126   3                      }
- 127   2                      else if(!isStartPosition2 && !isStartPosition1)
- 128   2                      {
- 129   3                              isStartPosition = 0;
- 130   3                      }
- 131   2                      //初始化过程中判断原点
- 132   2                      if(initFlag == 1 && isStartPosition == 1)
- 133   2                      {
- 134   3                              pulseSettingNumCount = 4;
- 135   3                              currentPosition = 1;
- 136   3                              initFlag = 0;
- 137   3                      }
- 138   2                      //Save setting to eeprom
- 139   2                      if(saveSetting)
- 140   2                      {
- 141   3                              //计算电机旋转角
- 142   3                              temp = (unsigned long)pulseSettingNum*motorStepAngle;
- 143   3                              motorRotationAngle = temp/motorReducGearRatio;
- 144   3                              //计算丝杆导程
- 145   3                              temp = (unsigned long)pulseSettingNum*motorStepAngle;
- 146   3                              temp =  (unsigned long)temp * screwPitch;
- 147   3                              temp =  (unsigned long)temp / motorReducGearRatio;
- 148   3                              ballScrew = temp/3600;
- 149   3                              //保存设置
- 150   3                              ChangeScreenPage(0x04);
- 151   3                              parameter_save();
- 152   3                              ChangeScreenPage(0x02);
- 153   3                              saveSetting = 0;
- 154   3                              refreshDisplay = 1;
- 155   3                      }
- 156   2                      //刷新显示      
- 157   2                      if(refreshDisplay)
- 158   2                      {
- 159   3                              parameter_send_screen();
- 160   3                              refreshDisplay = 0;
- 161   3                      }
- 162   2              }   
- 163   1      }
- 164          
- 165          
- 166          
- 167          
- 168          
- 169          
- 170          
- 171          
+  81          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    728    ----
+   CODE SIZE        =     83    ----
    CONSTANT SIZE    =   ----    ----
-   XDATA SIZE       =   ----       6
+   XDATA SIZE       =   ----       2
    PDATA SIZE       =   ----    ----
-C51 COMPILER V7.50   MAIN                                                                  08/24/2014 16:57:11 PAGE 4   
-
    DATA SIZE        =   ----    ----
    IDATA SIZE       =   ----    ----
    BIT SIZE         =   ----    ----

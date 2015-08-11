@@ -1,0 +1,10 @@
+---- startSecondMotor Matches (9 in 1 files) ----
+Parameter.c (source):static BOOL startSecondMotor = FALSE;
+Parameter.c (source):	if (/*startSecondMotor &&*/ userControl)
+Parameter.c (source):		startSecondMotor = FALSE;
+Parameter.c (source):				//startSecondMotor = TRUE;
+Parameter.c (source):				startSecondMotor = FALSE;
+Parameter.c (source):				startSecondMotor = TRUE;
+Parameter.c (source):				startSecondMotor = FALSE;
+Parameter.c (source):	if (motorAction != MOTOR_UNKOWN || startSecondMotor)
+Parameter.c (source):	if (motorAction != MOTOR_UNKOWN || startSecondMotor)

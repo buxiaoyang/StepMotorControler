@@ -1,4 +1,4 @@
-#include <reg52.h>
+//#include <reg52.h>
 #include <parameter.h>
 #include <intrins.h>
 #include <dispatch.h>
