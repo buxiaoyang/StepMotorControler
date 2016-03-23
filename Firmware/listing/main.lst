@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   MAIN                                                                  08/08/2015 15:51:17 PAGE 1   
+C51 COMPILER V7.50   MAIN                                                                  12/29/2015 17:09:19 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE MAIN
@@ -62,39 +62,42 @@ line level    source
   52   1              InitHardware();
   53   1          // 初始化参数
   54   1              InitParameters();
-C51 COMPILER V7.50   MAIN                                                                  08/08/2015 15:51:17 PAGE 2   
+C51 COMPILER V7.50   MAIN                                                                  12/29/2015 17:09:19 PAGE 2   
 
   55   1              
   56   1              while (1)
   57   1              {
-  58   2                      delay_us(100);
-  59   2                      //按键扫描---10us*30=300us=0.3ms,控制按键扫描频率
-  60   2                      count10ms++;
-  61   2                      if(count10ms > 29)
-  62   2                      {
-  63   3                              ScanKey();
-  64   3                              count10ms = 0;
-  65   3                      }
-  66   2      
-  67   2                      AdjustTimerCount();
-  68   2                      CheckSensorInput();
-  69   2                      StartSecondMotor();
-  70   2                      DisplayParameters();
-  71   2                      SaveParameters();
-  72   2              } 
-  73   1      }
-  74          
-  75          
-  76          
+  58   2                      #ifdef STATE_MACHINE_DELAY
+                                      ScanKey();
+                              #else
+  61   2                              delay_us(100);
+  62   2                              //按键扫描---10us*30=300us=0.3ms,控制按键扫描频率
+  63   2                              count10ms++;
+  64   2                              if(count10ms > 29)
+  65   2                              {
+  66   3                                      ScanKey();
+  67   3                                      count10ms = 0;
+  68   3                              }
+  69   2                      #endif
+  70   2      
+  71   2                      AdjustTimerCount();
+  72   2                      CheckSensorInput();
+  73   2                      //DisplayParameters();
+  74   2                      SaveParameters();
+  75   2              } 
+  76   1      }
   77          
   78          
   79          
   80          
   81          
+  82          
+  83          
+  84          
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =     83    ----
+   CODE SIZE        =     77    ----
    CONSTANT SIZE    =   ----    ----
    XDATA SIZE       =   ----       2
    PDATA SIZE       =   ----    ----

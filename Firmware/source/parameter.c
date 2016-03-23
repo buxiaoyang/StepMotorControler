@@ -5,7 +5,7 @@
 #include "uart.h"
 #include "debug.h"
 
-//#define REVERSE_DIRECTION
+#define REVERSE_DIRECTION
 
 // 第二电机运行是否需要由用户控制
 //#define USER_CONTROL 
@@ -53,12 +53,65 @@ static unsigned int testPulseSettingNum = 10000;
 static BOOL userControl = FALSE;
 static BOOL waitUserControl = FALSE;
 
-//static float result = 0;
+// 如果在第一个电机结束，第二个电机运动之前断电，则保存当前状态
+static BOOL saveFirstAction = FALSE;
+
+static BOOL saveCurrentPosition = TRUE;
+
+static int currentPage = 0;
+
+void SetCurrentPage(int page)
+{
+	currentPage = page;
+}
+
+void SaveSnapshot()
+{
+	if (saveFirstAction)
+	{
+		saveFirstAction = FALSE;
+		IapProgramByte(IAP_ADDRESS+100, 0xEE); //写入标志位
+		IapProgramByte(IAP_ADDRESS+101, userControl);
+		IapProgramByte(IAP_ADDRESS+102, waitUserControl);
+
+		IapProgramByte(IAP_ADDRESS+103, (BYTE)(currentMotor>>8));
+		IapProgramByte(IAP_ADDRESS+104, (BYTE)currentMotor);
+
+		IapProgramByte(IAP_ADDRESS+105, (BYTE)(motorAction>>8));
+		IapProgramByte(IAP_ADDRESS+106, (BYTE)motorAction);
+
+		IapProgramByte(IAP_ADDRESS+107, (BYTE)(pulseSettingNum>>8));
+		IapProgramByte(IAP_ADDRESS+108, (BYTE)pulseSettingNum);
+
+		secondMotorFlag = 1;
+	}
+}
+
+void RestoreSnapshot()
+{
+	if (IapReadByte(IAP_ADDRESS+100) == 0xEE)
+	{	
+		userControl = IapReadByte(IAP_ADDRESS+101);
+		waitUserControl = IapReadByte(IAP_ADDRESS+102);
+		currentMotor = ((IapReadByte(IAP_ADDRESS+103) << 8) | IapReadByte(IAP_ADDRESS+104));
+		motorAction = ((IapReadByte(IAP_ADDRESS+105) << 8) | IapReadByte(IAP_ADDRESS+106));
+		pulseSettingNum = ((IapReadByte(IAP_ADDRESS+107) << 8) | IapReadByte(IAP_ADDRESS+108));
+
+		if (userControl == TRUE)
+		{
+			startSecondMotor = TRUE;	
+		}
+	}
+}
 
 void UserControl()
 {
-	userControlFlag = 0;
+	if (motorAction != MOTORDIRECTION_FORWARD && motorAction != MOTORDIRECTION_BACKWARD)
+	{
+		return;
+	}
 	userControl = TRUE;
+	StartSecondMotor();
 }
 
 static void DebugParameters()
@@ -90,7 +143,7 @@ void SetMotorForward()
 			secondMotorDirection = 0;
 		#endif
 	}
-	else
+	else if (currentMotor == MOTORFLAG_ONE)
 	{
 		#ifndef REVERSE_DIRECTION
 			motorDirection = 1;
@@ -110,7 +163,7 @@ void SetMotorBackward()
 			secondMotorDirection = 1;
 		#endif
 	}
-	else
+	else if (currentMotor == MOTORFLAG_ONE)
 	{
 		#ifndef REVERSE_DIRECTION
 			motorDirection = 0;
@@ -133,7 +186,7 @@ void DisablePulse()
 		{
 			secondMotorPWM = 1;
 		}
-		else
+		else if (currentMotor == MOTORFLAG_ONE)
 		{
 			motorPWM = 1;
 		}
@@ -153,7 +206,7 @@ void ChangePulse()
 		{
 			secondMotorPWM = ~secondMotorPWM;
 		}
-		else
+		else if (currentMotor == MOTORFLAG_ONE)
 		{
 			motorPWM = ~motorPWM;
 		}
@@ -194,7 +247,7 @@ void StartSecondMotor()
 {
 	if (/*startSecondMotor &&*/ userControl)
 	{
-		//startSecondMotor = FALSE;
+		startSecondMotor = FALSE;
 		userControl = FALSE;
 		waitUserControl = FALSE;
 		
@@ -203,21 +256,22 @@ void StartSecondMotor()
 		//delay_ms(1000);
 		if (motorAction == MOTORDIRECTION_FORWARD)
 		{
+			currentMotor = MOTORFLAG_TWO;
 			SetMotorForward();
-			SetTimerParameter(50, pulseSettingNum);
 		}
 		else if (motorAction == MOTORDIRECTION_BACKWARD)
 		{
+			currentMotor = MOTORFLAG_TWO;
 			SetMotorBackward();
-			SetTimerParameter(50, pulseSettingNum);
 		}
-		/*
-		else if (motorAction == MOTOR_INIT)
+		
+		SyncRotationAngle();
+		if (pulseSettingNum == 0)
 		{
-			SetMotorBackward();
-			SetTimerParameter(50, 65535);	
+			return;
 		}
-		*/
+		SetTimerParameter(50, pulseSettingNum);
+		userControlFlag = 0;
 	}
 }
 
@@ -238,26 +292,30 @@ void FinishPulse()
 			if (currentMotor == MOTORFLAG_ONE)
 			{
 				Debug("FinishPulse MOTORFLAG_ONE\r\n");
-				currentMotor = MOTORFLAG_TWO;	
 				motorAction = MOTOR_INIT;
+				currentMotor = MOTORFLAG_TWO;
+				/*
 				#ifndef REVERSE_DIRECTION
 					secondMotorDirection = 0; // 第二个电机后退
 				#else
 					secondMotorDirection = 1;
 				#endif
+				*/
+				SetMotorBackward();
 				SetTimerParameter(50, 65535);		
+				waitUserControl = FALSE;
 			}
 			else if (currentMotor == MOTORFLAG_TWO)
 			{
 				Debug("FinishPulse MOTORFLAG_TWO\r\n");
 				// 更新显示屏
 				currentPosition = 1;
-				startSecondMotor = FALSE;
 				currentMotor = MOTORFLAG_UNKOWN;
 				motorAction = MOTOR_UNKOWN;
 				// 不能立即刷新，否则会阻塞
 				EnableRefreshDisplay();
 				EnableSaveSetting();
+				saveCurrentPosition = TRUE;
 			}
 			break;
 		case MOTORDIRECTION_FORWARD:
@@ -283,6 +341,14 @@ void FinishPulse()
 				waitUserControl = TRUE;
 				startSecondMotor = TRUE;
 				currentMotor = MOTORFLAG_TWO;
+
+				saveFirstAction = TRUE;
+				saveCurrentPosition = FALSE;
+				EnableSaveSetting();
+				
+				//SaveParameters();
+				
+				secondMotorFlag = 1;
 			}
 			else if (currentMotor == MOTORFLAG_TWO)
 			{
@@ -301,7 +367,7 @@ void FinishPulse()
 						currentMotor = MOTORFLAG_TWO;
 						motorAction = MOTORDIRECTION_BACKWARD;
 						// 控制测试指示灯亮
-						secondMotorFlag = 0;
+						//secondMotorFlag = 0;
 						SetTimerParameter(50, testPulseSettingNum);
 					}
 					else if (motorAction == MOTORDIRECTION_BACKWARD)
@@ -312,10 +378,10 @@ void FinishPulse()
 						currentMotor = MOTORFLAG_UNKOWN;
 						motorAction = MOTOR_UNKOWN;
 						// 控制测试指示灯灭
-						secondMotorFlag = 1;
+						//secondMotorFlag = 1;
 						// 不能立即刷新，否则会阻塞
 						EnableRefreshDisplay();
-						EnableSaveSetting();
+						//EnableSaveSetting();
 					}
 					return;
 				}
@@ -329,7 +395,9 @@ void FinishPulse()
 				motorAction = MOTOR_UNKOWN;
 				// 不能立即刷新，否则会阻塞
 				EnableRefreshDisplay();
-				EnableSaveSetting();
+				EnableSaveSetting(); // ---保存耗时会不会影响稳定性?
+
+				userControlFlag = 1;
 			}
 			break;
 		default:
@@ -538,21 +606,27 @@ void InitMotor()
 	currentMotor = MOTORFLAG_ONE;
 	SetMotorBackward();
 	SetTimerParameter(50, 65535);	
+	waitUserControl = FALSE;
+	userControl = FALSE;
 }
 
 // TODO:当前位置范围为1-20，无法继续前进或后退时通过界面给出提示
 void ControlMotor(int direction)
 {
 	int position = 0;
-	if (motorAction != MOTOR_UNKOWN || startSecondMotor)
+	#if 1
+	// 当前电机未运行结束
+	if (motorAction != MOTOR_UNKOWN/* || startSecondMotor*/)
 	{
 		Debug("motor running\r\n");
 		DebugParameter("motorAction", motorAction);
+		// 是否要记录操作
 		return;
 	}
+	#endif
+	
 	DebugParameter("ControlMotor:direction", direction);
 
-	userControlFlag = 1;
 	userControl = FALSE;
 	if (direction == MOTORDIRECTION_FORWARD)
 	{
@@ -560,10 +634,10 @@ void ControlMotor(int direction)
 		if (position > MOTORPOSITION_END || position <= MOTORPOSITION_BEGIN)
 		{
 			#if 0
-			ChangeScreenPage(0x09);
-			// 为了显示保存界面，这里延时1s
-			delay_ms(1000);
-			ChangeScreenPage(0x00);
+				ChangeScreenPage(0x09);
+				// 为了显示保存界面，这里延时1s
+				delay_ms(1000);
+				ChangeScreenPage(0x00);
 			#endif
 			return;
 		}
@@ -588,9 +662,18 @@ void ControlMotor(int direction)
 		currentMotor = MOTORFLAG_ONE;
 		SetMotorBackward();	
 	}
+	else
+	{
+		return;
+	}
 	SyncRotationAngle();
-	//DebugParameter("========pulseSettingNum", pulseSettingNum);
+	if (pulseSettingNum == 0)
+	{
+		return;
+	}
 	SetTimerParameter(50, pulseSettingNum);
+
+	secondMotorFlag = 0;
 }
 
 // 初始位置时才可以进行测试，测试的步进角固定
@@ -724,6 +807,10 @@ void CheckSensorInput()
 			if (sensorStartPosi2 == 0)
 			{
 				StopPulseTimer();
+				// 输出低电平给予用户反馈
+				sensorStartFlag = 0;
+				delay_ms(1);
+				sensorStartFlag = 1;
 			}
 		}
 	}
@@ -774,7 +861,6 @@ void InitParameters()
 
 	SyncRotationAngleNumber();
 	EnableRefreshDisplay();
-	DisplayParameters();
 	DebugParameters();
 }
 
@@ -838,35 +924,93 @@ static unsigned long GetBallScrew(unsigned int position)
 	return currentBallScrew;
 }
 
-void DisplayParameters()
+
+// 更新显示数据
+static void GetRefreshParameters()
+{
+	pulseSettingNum = GetPulseNumber(currentPosition);
+	motorRotationAngle = GetRotationAngle(currentPosition);
+	ballScrew = GetBallScrew(currentPosition);
+}
+
+// 刷新指定屏幕的数据
+static void RefreshParametersByPage(int page)
 {
 	int i;
 	int addr;
+	switch (page)
+	{
+		case 0x00:
+			GetRefreshParameters();
+			// modified 0x0010->0x0020 0x0012->0x0022
+			SendDataToScreen(0x0020, currentPosition);
+			SendDataToScreen(0x0022, IsInitPosition()); 
+			SendLongDataToScreen(0x000A, ballScrew);
+			SendLongDataToScreen(0x000E, motorRotationAngle);
+			break;
+			
+		case 0x02:
+			GetRefreshParameters();
+			SendDataToScreen(0x0000, pulseSettingNum);
+			SendDataToScreen(0x0002, pulseSettingFreq);
+			SendDataToScreen(0x0004, motorStepAngle);
+			SendDataToScreen(0x0006, screwPitch);
+			SendDataToScreen(0x0008, motorReducGearRatio);
+			SendLongDataToScreen(0x000A, ballScrew);
+			SendLongDataToScreen(0x000E, motorRotationAngle);
+			break;
+			
+		case 0x07:
+			for (i = 0; i < ROTATIONANGLE_SIZE/2; i++)
+			{
+				addr = SCREEN_ROTATIONANGLE_BEGIN + i * 2;
+				SendDataToScreen(addr, rotationAngles[i]);
+			} 
+			break;
+			
+		case 0x08:
+			for (i = ROTATIONANGLE_SIZE/2; i < ROTATIONANGLE_SIZE; i++)
+			{
+				addr = SCREEN_ROTATIONANGLE_BEGIN + i * 2;
+				SendDataToScreen(addr, rotationAngles[i]);
+			} 
+			break;
+	} 	
+}
+
+// 刷新所有数据
+static void RefreshParameters()
+{
+	int i;
+	int addr;
+	DebugParameter("currentPosition", currentPosition);
+	//pulseSettingNum = GetPulseNumber(currentPosition);
+	//motorRotationAngle = GetRotationAngle(currentPosition);
+	//ballScrew = GetBallScrew(currentPosition);
+	GetRefreshParameters();
+	SendDataToScreen(0x0000, pulseSettingNum);
+	SendDataToScreen(0x0002, pulseSettingFreq);
+	SendDataToScreen(0x0004, motorStepAngle);
+	SendDataToScreen(0x0006, screwPitch);
+	SendDataToScreen(0x0008, motorReducGearRatio);
+	SendLongDataToScreen(0x000A, ballScrew);// ballScrew
+	SendLongDataToScreen(0x000E, motorRotationAngle); // motorRotationAngle
+
+	// modified 0x0010->0x0020 0x0012->0x0022
+	SendDataToScreen(0x0020, currentPosition);
+	SendDataToScreen(0x0022, IsInitPosition()); 
+	for (i = 0; i < ROTATIONANGLE_SIZE; i++)
+	{
+		addr = SCREEN_ROTATIONANGLE_BEGIN + i * 2;
+		SendDataToScreen(addr, rotationAngles[i]);
+	}
+}
+
+void DisplayParameters()
+{
 	if (IsRefreshDisplay())
 	{
-		DebugParameter("currentPosition", currentPosition);
-		pulseSettingNum = GetPulseNumber(currentPosition);
-		motorRotationAngle = GetRotationAngle(currentPosition);
-		ballScrew = GetBallScrew(currentPosition);
-
-		SendDataToScreen(0x0000, pulseSettingNum);
-		SendDataToScreen(0x0002, pulseSettingFreq);
-		SendDataToScreen(0x0004, motorStepAngle);
-		SendDataToScreen(0x0006, screwPitch);
-		SendDataToScreen(0x0008, motorReducGearRatio);
-		SendLongDataToScreen(0x000A, ballScrew);// ballScrew
-		SendLongDataToScreen(0x000E, motorRotationAngle); // motorRotationAngle
-
-		// modified 0x0010->0x0020 0x0012->0x0022
-		SendDataToScreen(0x0020, currentPosition);
-		SendDataToScreen(0x0022, IsInitPosition()); 
-	
-
-		for (i = 0; i < ROTATIONANGLE_SIZE; i++)
-		{
-			addr = SCREEN_ROTATIONANGLE_BEGIN + i * 2;
-			SendDataToScreen(addr, rotationAngles[i]);
-		} 	
+		RefreshParametersByPage(currentPage);
 		DisableRefreshDisplay();
 	}
 }
@@ -876,6 +1020,7 @@ void SaveParameters()
 	if (IsSaveSetting())
 	{
 		SaveParametersToEEPROM();
+		SaveSnapshot();
 		DisableSaveSetting();
 	}
 }
@@ -912,6 +1057,8 @@ BOOL ReadParametersFromEEPROM()
 		
 		result = TRUE;
 	}
+
+	RestoreSnapshot();
 	return result;
 }
 
@@ -921,7 +1068,7 @@ BOOL SaveParametersToEEPROM()
 	int i = 0;
 	int addr = 0;
 	BOOL result = FALSE;
-    delay_ms(10); 
+    //delay_ms(10); 
 	IapEraseSector(IAP_ADDRESS); //擦除EEPROM
    	IapProgramByte(IAP_ADDRESS+0, (BYTE)(pulseSettingNum>>8));
 	IapProgramByte(IAP_ADDRESS+1, (BYTE)pulseSettingNum);
@@ -945,6 +1092,7 @@ BOOL SaveParametersToEEPROM()
 	    
 	// 新增
 	IapProgramByte(IAP_ADDRESS+18, (BYTE)currentPosition);
+	
 
 	// 保存旋转角
 	addr = IAP_ADDRESS + 20;
@@ -1051,21 +1199,21 @@ void SyncRotationAngle()
 {
 	unsigned int rotationAngle;
 	#if 0
-	unsigned int i;
-	// 策略1:循环使用旋转角
-	if (rotationAngleNumber > 0)
-	{
-		for (i = 0; i < rotationAngleNumber; i++)
+		unsigned int i;
+		// 策略1:循环使用旋转角
+		if (rotationAngleNumber > 0)
 		{
-			rotationAngle = rotationAngles[currentRotationAngleIndex];
-			currentRotationAngleIndex = (currentRotationAngleIndex + 1) % rotationAngleNumber;
-			if (rotationAngle > 0)
+			for (i = 0; i < rotationAngleNumber; i++)
 			{
-				pulseSettingNum = rotationAngle;
-				return;
+				rotationAngle = rotationAngles[currentRotationAngleIndex];
+				currentRotationAngleIndex = (currentRotationAngleIndex + 1) % rotationAngleNumber;
+				if (rotationAngle > 0)
+				{
+					pulseSettingNum = rotationAngle;
+					return;
+				}
 			}
 		}
-	}
 	#else 
 		// 策略2:每个位置对应一个旋转角
 		// 位置1对应旋转角1，...

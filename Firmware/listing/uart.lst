@@ -1,4 +1,4 @@
-C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 1   
+C51 COMPILER V7.50   UART                                                                  12/29/2015 17:09:27 PAGE 1   
 
 
 C51 COMPILER V7.50, COMPILATION OF MODULE UART
@@ -62,7 +62,7 @@ line level    source
   52          void SendString(char *s);
   53          void ReceiveData(BYTE dat);
   54          void anyData();
-C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 2   
+C51 COMPILER V7.50   UART                                                                  12/29/2015 17:09:27 PAGE 2   
 
   55          
   56          void uart_init()
@@ -126,7 +126,7 @@ line level    source
  114   1              unsigned char cnt=0;
  115   1      
  116   1              IE2 &= (~ES2);//关闭串口2中断//ES2 = 0;
-C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 3   
+C51 COMPILER V7.50   UART                                                                  12/29/2015 17:09:27 PAGE 3   
 
  117   1              S2CON &= (~S2TI);//S2TI = 0;            
  118   1              while(*(data_at+cnt))   //判断一串数据是否结束
@@ -190,7 +190,7 @@ line level    source
  176   2                              dataLength = dat;
  177   2                              dataIndex = 0;
  178   2                              receiveSteps ++;
-C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 4   
+C51 COMPILER V7.50   UART                                                                  12/29/2015 17:09:27 PAGE 4   
 
  179   2                      break;
  180   2                      case 3:
@@ -254,7 +254,7 @@ line level    source
  238   2                      AUXR &= (~BRTx12);//BRTx12 = 0;12T模式          
  239   2              }
  240   1              else
-C51 COMPILER V7.50   UART                                                                  08/08/2015 15:51:26 PAGE 5   
+C51 COMPILER V7.50   UART                                                                  12/29/2015 17:09:27 PAGE 5   
 
  241   1              {
  242   2                      return -2;

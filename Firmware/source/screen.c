@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "uart.h"
+#include "parameter.h"
 
 void SendLongDataToScreen(WORD address, LONG dat)
 {
@@ -37,6 +38,7 @@ void ChangeScreenPage(WORD page)
 	SendData(0x03);
 	SendData(page>>8);
 	SendData(page);
+	SetCurrentPage(page);
 }
 
 

@@ -22,9 +22,13 @@
 
 /* define variables */
 static WORD count;                         //1000 times counter
-WORD timer_count;
-WORD pulseSettingNumCount;
+static WORD timer_count;
+static WORD pulseSettingNumCount;
 //-----------------------------------------------
+
+static WORD motorRunning = 0;
+
+#define DISABLE_TIMER
 
 /* Timer0 interrupt routine */
 void tm0_isr() interrupt 1 using 1
@@ -41,13 +45,20 @@ void tm0_isr() interrupt 1 using 1
 			//motorPWM = 1;
 			//pulseSettingNumCount --;
 			//motorPWM = ~motorPWM;
+
 			DisablePulse();
-			pulseSettingNumCount--;
 			ChangePulse();
+			pulseSettingNumCount--;
+			motorRunning = 1;
 		}
 		else
 		{  
-			FinishPulse();
+			if (motorRunning == 1)
+			{
+				FinishPulse();
+				motorRunning = 0;
+				//pulseSettingNumCount = 0;
+			}
 		}
 		count = timer_count;               //reset counter
     }
@@ -97,19 +108,25 @@ void AdjustTimerCount()
 
 void StopPulseTimer()
 {
-	TR0 = 0;
-    ET0 = 0; 
-	FinishPulse();
+	#ifdef DISABLE_TIMER
+		TR0 = 0;
+	    ET0 = 0; 
+		FinishPulse();
+	#else
+		FinishPulse();
+		motorRunning = 0;
+		pulseSettingNumCount = 0;
+	#endif
 	Debug("StopPulseTimer\r\n");
 }
 
 void SetTimerParameter(WORD timerCount, WORD pulseCount)
 {
+#ifdef DISABLE_TIMER
 	TR0 = 0;
-    ET0 = 0; 
+	ET0 = 0; 
+#endif
     
-	//DebugParameter("before timerCount", timerCount);
-	//DebugParameter("before pulseSettingNumCount", pulseCount);
 	if (timerCount > 0)
 	{
 		timer_count = timerCount;
@@ -119,10 +136,8 @@ void SetTimerParameter(WORD timerCount, WORD pulseCount)
 	{
 		pulseSettingNumCount = pulseCount;
 	}
-	
-	
+#ifdef DISABLE_TIMER
 	TR0 = 1;
-    ET0 = 1;   
-	//DebugParameter("timer_count", timer_count);
-	//DebugParameter("pulseSettingNumCount", pulseSettingNumCount);	
+	ET0 = 1; 
+#endif
 }

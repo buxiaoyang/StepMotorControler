@@ -55,19 +55,22 @@ void main()
 	
 	while (1)
 	{
-		delay_us(100);
-		//°´¼üÉ¨Ãè---10us*30=300us=0.3ms,¿ØÖÆ°´¼üÉ¨ÃèÆµÂÊ
-		count10ms++;
-		if(count10ms > 29)
-		{
+		#ifdef STATE_MACHINE_DELAY
 			ScanKey();
-			count10ms = 0;
-		}
+		#else
+			delay_us(100);
+			//°´¼üÉ¨Ãè---10us*30=300us=0.3ms,¿ØÖÆ°´¼üÉ¨ÃèÆµÂÊ
+			count10ms++;
+			if(count10ms > 29)
+			{
+				ScanKey();
+				count10ms = 0;
+			}
+		#endif
 
 		AdjustTimerCount();
 		CheckSensorInput();
-		StartSecondMotor();
-		DisplayParameters();
+		//DisplayParameters();
 		SaveParameters();
 	} 
 }

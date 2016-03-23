@@ -32,6 +32,9 @@ sbit keyUserControl   = P0^7; //等待用户输入，第二个电机才开始运转
 
 sbit secondMotorFlag  = P1^7; //第二个电机开始反转指示灯
 sbit userControlFlag  = P1^6; //
+
+sbit sensorStartFlag  = P1^4; //输出低电平给予用户反馈
+
 // end
 
 //输出
@@ -153,6 +156,11 @@ void HandleButtuon(int addr, int dat);
 BOOL ReadParametersFromEEPROM();
 BOOL SaveParametersToEEPROM();
 
+
+void SaveSnapshot();
+void RestoreSnapshot();
+
+void SetCurrentPage(int page);
 // end
 
 #endif
